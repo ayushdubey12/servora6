@@ -1,0 +1,61 @@
+.onboarding-page {
+  display: grid;
+  gap: 24px;
+}
+
+.onboarding-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onboarding-page-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  color: var(--primary);
+  backdrop-filter: blur(40px);
+}
+
+.onboarding-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(40px);
+}
+
+.onboarding-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.onboarding-form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.onboarding-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--error-container);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-lg);
+  color: var(--on-error-container);
+  font-size: var(--body-md-fontSize);
+}
+
+@media (max-width: 768px) {
+  .onboarding-form-actions {
+    flex-direction: column-reverse;
+  }
+}

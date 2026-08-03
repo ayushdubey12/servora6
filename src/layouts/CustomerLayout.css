@@ -1,0 +1,38 @@
+.customer-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--background);
+  position: relative;
+  padding-bottom: 80px;
+}
+
+.customer-header {
+  background: var(--glass-strong-bg);
+  backdrop-filter: blur(60px);
+  -webkit-backdrop-filter: blur(60px);
+  border-bottom: 1px solid var(--glass-border);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+}
+
+.customer-header-inner {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.customer-restaurant-name {
+  font-family: var(--font-sans);
+  font-size: var(--body-lg-fontSize);
+  font-weight: var(--font-semibold);
+  color: var(--on-surface);
+  margin: 0;
+}
+
+.customer-main {
+  flex: 1;
+  padding: var(--space-4) 0;
+}

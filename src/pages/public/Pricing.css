@@ -1,0 +1,139 @@
+.pricing-page {
+  background-color: var(--background);
+  border-bottom: 1px solid var(--outline-variant);
+}
+
+.billing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.toggle-btn {
+  width: 56px;
+  height: 32px;
+  background-color: var(--outline-variant);
+  border-radius: var(--radius-full);
+  position: relative;
+  transition: all var(--transition-base);
+  border: 1px solid var(--glass-border);
+}
+
+.toggle-btn.active {
+  background-color: var(--primary);
+  border-color: transparent;
+}
+
+.toggle-slider {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 24px;
+  height: 24px;
+  background-color: var(--on-primary);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-xs);
+}
+
+.toggle-btn.active .toggle-slider {
+  transform: translateX(24px);
+}
+
+.pricing-card {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-8);
+  transition: all var(--transition-base);
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+.pricing-card:hover {
+  background: var(--glass-hover-bg);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.pricing-card.popular {
+  border-color: var(--primary);
+  background: rgba(173, 198, 255, 0.05);
+}
+
+.popular-badge {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--primary);
+  color: var(--on-primary);
+  padding: 4px 16px;
+  border-radius: var(--radius-full);
+  font-size: var(--label-md-fontSize);
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--label-md-letterSpacing);
+  font-family: var(--font-mono);
+}
+
+.pricing-header {
+  margin-bottom: var(--space-6);
+}
+
+.pricing-price {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  margin-bottom: var(--space-2);
+}
+
+.pricing-price .currency {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--on-surface);
+  padding-bottom: 8px;
+  font-family: var(--font-mono);
+}
+
+.pricing-price .amount {
+  font-size: var(--display-fontSize);
+  font-weight: var(--display-fontWeight);
+  color: var(--on-surface);
+  line-height: 1;
+  letter-spacing: var(--display-letterSpacing);
+}
+
+.pricing-price .period {
+  font-size: var(--body-md-fontSize);
+  color: var(--on-surface-variant);
+  padding-bottom: 8px;
+  font-family: var(--font-mono);
+}
+
+.pricing-features {
+  margin-top: var(--space-8);
+  padding-top: var(--space-8);
+  border-top: 1px solid var(--glass-border);
+  flex: 1;
+}
+
+.feature-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.save-badge {
+  display: inline-block;
+  background: rgba(173, 198, 255, 0.1);
+  color: var(--primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: var(--label-sm-fontSize);
+  font-weight: var(--font-medium);
+  font-family: var(--font-mono);
+  letter-spacing: var(--label-sm-letterSpacing);
+  border: 1px solid rgba(173, 198, 255, 0.2);
+}

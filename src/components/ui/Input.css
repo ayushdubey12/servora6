@@ -1,0 +1,66 @@
+.input-group { display: flex; flex-direction: column; gap: var(--space-2); }
+.input-label {
+  font-family: var(--font-mono);
+  font-size: var(--label-md-fontSize);
+  font-weight: var(--label-md-fontWeight);
+  color: var(--on-surface-variant);
+  letter-spacing: var(--label-md-letterSpacing);
+  text-transform: uppercase;
+}
+.input-wrapper { position: relative; display: flex; align-items: center; }
+.input-field {
+  width: 100%;
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  font-size: var(--body-md-fontSize);
+  color: var(--on-surface);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-base);
+  outline: none;
+}
+.input-field::placeholder { color: var(--on-surface-variant); font-family: var(--font-mono); font-size: var(--label-md-fontSize); }
+.input-field:hover { border-color: rgba(255, 255, 255, 0.2); }
+.input-field:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(173, 198, 255, 0.1);
+  background: var(--glass-bg);
+}
+.input-with-icon { padding-left: 40px; }
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--on-surface-variant);
+  display: flex;
+  pointer-events: none;
+}
+.input-toggle {
+  position: absolute;
+  right: 12px;
+  color: var(--on-surface-variant);
+  display: flex;
+  padding: 4px;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+.input-toggle:hover { color: var(--primary); }
+.input-textarea { min-height: 100px; resize: vertical; line-height: 1.5; }
+.input-select {
+  appearance: none;
+  padding-right: 40px;
+  cursor: pointer;
+  color: var(--on-surface);
+}
+.input-select-arrow {
+  position: absolute;
+  right: 14px;
+  color: var(--on-surface-variant);
+  display: flex;
+  pointer-events: none;
+}
+.input-error .input-field { border-color: var(--error); }
+.input-error .input-field:focus { box-shadow: 0 0 0 3px rgba(255, 180, 171, 0.1); }
+.input-error-text { font-family: var(--font-mono); font-size: var(--label-sm-fontSize); color: var(--error); }
+.input-hint { font-family: var(--font-mono); font-size: var(--label-sm-fontSize); color: var(--on-surface-variant); }

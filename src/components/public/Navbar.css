@@ -1,0 +1,112 @@
+.public-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--navbar-height);
+  background: rgba(19, 19, 19, 0.84);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  z-index: var(--z-sticky);
+  transition: all var(--transition-base);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.public-navbar.scrolled {
+  border-bottom-color: rgba(255, 255, 255, 0.12);
+  background: rgba(19, 19, 19, 0.94);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--navbar-height);
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.brand-name {
+  font-size: var(--text-xl);
+  font-weight: var(--font-extrabold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--on-surface);
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.nav-link {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--on-surface-variant);
+  transition: color var(--transition-fast);
+}
+
+.nav-link:hover {
+  color: var(--on-surface);
+}
+
+.nav-link.active {
+  color: var(--primary);
+}
+
+.navbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.mobile-menu-btn {
+  color: var(--on-surface);
+  display: none;
+}
+
+.mobile-nav-overlay {
+  position: absolute;
+  top: var(--navbar-height);
+  left: 0;
+  right: 0;
+  background: rgba(19, 19, 19, 0.96);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: var(--space-4) 0;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  display: none;
+}
+
+.mobile-nav-links {
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-nav-link {
+  padding: var(--space-4) var(--space-6);
+  font-size: var(--text-base);
+  font-weight: var(--font-medium);
+  color: var(--on-surface);
+}
+
+.mobile-nav-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: var(--space-2) var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+  .mobile-nav-overlay {
+    display: block;
+  }
+}

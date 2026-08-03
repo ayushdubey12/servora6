@@ -1,0 +1,182 @@
+.staff-orders {
+  padding-bottom: 80px;
+}
+
+.staff-orders-title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--on-surface);
+  padding: 24px 0 12px;
+}
+
+.staff-orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.orders-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--on-surface-variant);
+}
+
+.staff-order-card.staff-full {
+  padding: 16px;
+}
+
+.staff-order-row {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.staff-order-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.staff-order-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.staff-order-id {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
+
+.staff-order-table-badge {
+  padding: 3px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--glass-strong-bg);
+  border: 1px solid var(--glass-border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+}
+
+.staff-order-items-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.staff-order-item-chip {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--glass-strong-bg);
+  border: 1px solid var(--glass-border);
+  font-size: 11px;
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+}
+
+.staff-order-notes {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  background: var(--glass-subtle-bg);
+  border-radius: var(--radius-md);
+  border-left: 2px solid var(--tertiary);
+  font-size: 12px;
+  color: var(--on-surface-variant);
+}
+
+.staff-order-notes span {
+  font-weight: 600;
+  color: var(--tertiary);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  font-size: 10px;
+}
+
+.staff-order-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+@media (max-width: 480px) {
+  .staff-order-row {
+    flex-direction: column;
+  }
+
+  .staff-order-meta {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.staff-order-total {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
+
+.staff-order-customer {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+}
+
+.staff-order-payment {
+  font-size: 11px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.staff-order-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.staff-order-time {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+}
+
+.staff-order-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* Order claiming UI */
+.staff-order-claims {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 8px; padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: rgba(173, 198, 255, 0.1);
+  border: 1px solid rgba(173, 198, 255, 0.2);
+  color: var(--primary);
+  font-family: var(--font-mono); font-size: var(--label-sm-fontSize);
+}
+.staff-order-unavailable {
+  font-family: var(--font-mono); font-size: var(--label-sm-fontSize);
+  color: var(--on-surface-variant); font-style: italic;
+}
+.staff-order-done {
+  font-family: var(--font-mono); font-size: var(--label-sm-fontSize);
+  color: var(--success);
+}

@@ -1,0 +1,82 @@
+.onboarding-start {
+  display: grid;
+  gap: 32px;
+}
+
+.onboarding-start-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 24px;
+  padding: 48px 32px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.025));
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-2xl);
+  backdrop-filter: blur(28px);
+}
+
+.onboarding-start-icon {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  backdrop-filter: blur(40px);
+  box-shadow: 0 0 40px rgba(173, 198, 255, 0.08);
+}
+
+.onboarding-start-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(28px);
+}
+
+.onboarding-step-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-fast);
+}
+
+.onboarding-step-item:hover {
+  background: var(--glass-hover-bg);
+}
+
+.onboarding-step-indicator {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--glass-hover-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+}
+
+.onboarding-step-number {
+  font-family: var(--font-mono);
+  font-size: var(--label-md-fontSize);
+  font-weight: var(--font-medium);
+  color: var(--primary);
+}
+
+.onboarding-start-progress {
+  padding: 0 4px;
+}
+
+@media (max-width: 768px) {
+  .onboarding-start-hero {
+    padding: 32px 16px;
+  }
+}

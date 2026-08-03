@@ -1,0 +1,209 @@
+.cart-page {
+  padding-bottom: 80px;
+}
+
+.cart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 0 16px;
+}
+
+.cart-title {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--on-surface);
+}
+
+.cart-item-count {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+}
+
+.cart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.cart-empty svg {
+  color: var(--on-surface-variant);
+  opacity: 0.5;
+}
+
+.cart-empty h3 {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--on-surface);
+}
+
+.cart-empty p {
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  margin-bottom: 8px;
+}
+
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.cart-item {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  padding: 16px;
+}
+
+.cart-item-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cart-item-emoji {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--glass-strong-bg);
+  border: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.cart-item-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.cart-item-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--on-surface);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cart-item-price {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+  margin-top: 2px;
+}
+
+.cart-item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.quantity-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cart-item-actions .quantity-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--on-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cart-item-actions .quantity-btn:hover {
+  background: var(--glass-hover-bg);
+}
+
+.quantity-value {
+  font-size: 16px;
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+}
+
+.cart-item-total {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
+
+.cart-item-remove {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--on-surface-variant);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cart-item-remove:hover {
+  color: var(--error);
+  background: var(--error-container);
+  border-color: rgba(255, 180, 171, 0.2);
+}
+
+.cart-summary {
+  background: var(--glass-strong-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.cart-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+  color: var(--on-surface-variant);
+}
+
+.cart-summary-total {
+  padding-top: 12px;
+  margin-top: 8px;
+  border-top: 1px solid var(--glass-border);
+  color: var(--on-surface);
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.cart-summary-value {
+  font-family: var(--font-mono);
+  color: var(--on-surface);
+}
+
+.cart-summary-total .cart-summary-value {
+  color: var(--primary);
+}

@@ -1,0 +1,128 @@
+.feedback-page {
+  padding-bottom: 80px;
+}
+
+.feedback-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.feedback-header {
+  margin-bottom: 24px;
+}
+
+.feedback-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--on-surface);
+}
+
+.feedback-subtitle {
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  margin-top: 6px;
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.feedback-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.feedback-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+}
+
+.star-rating {
+  display: flex;
+  gap: 8px;
+}
+
+.star-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+  color: var(--on-surface-variant);
+}
+
+.star-btn:hover {
+  transform: scale(1.1);
+}
+
+.star-btn.active {
+  color: var(--tertiary);
+}
+
+.rating-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tertiary);
+  margin-top: 4px;
+}
+
+.feedback-textarea {
+  padding: 14px 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  color: var(--on-surface);
+  font-size: 15px;
+  outline: none;
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color var(--transition-fast);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+}
+
+.feedback-textarea:focus {
+  border-color: var(--primary);
+}
+
+.feedback-textarea::placeholder {
+  color: var(--on-surface-variant);
+}
+
+.feedback-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 120px 24px;
+  text-align: center;
+}
+
+.success-icon {
+  color: var(--success);
+}
+
+.feedback-success h2 {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--on-surface);
+}
+
+.feedback-success p {
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  margin-bottom: 8px;
+}
