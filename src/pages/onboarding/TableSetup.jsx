@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { api } from '../../services/api';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -19,6 +20,7 @@ function readDraft() {
 
 export default function TableSetup() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [form, setForm] = useState({ tableCount: '4', seatsPerTable: '4' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,15 +39,25 @@ export default function TableSetup() {
     const nextDraft = { ...readDraft(), tables: form };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextDraft));
     try {
-      const tables = Array.from({ length: Number(form.tableCount) }, (_, index) => ({
-        number: index + 1,
-        seats: Number(form.seatsPerTable),
-        status: 'available',
-      }));
-      await api.post('/api/onboarding/tables', { tables });
+      if (user?.restaurantId) {
+        const tableCount = Number(form.tableCount);
+        const seatsPerTable = Number(form.seatsPerTable);
+
+        // Delete existing tables for this restaurant, then insert new ones
+        await supabase.from('tables').delete().eq('restaurant_id', user.restaurantId);
+
+        const tables = Array.from({ length: tableCount }, (_, index) => ({
+          restaurant_id: user.restaurantId,
+          number: index + 1,
+          seats: seatsPerTable,
+          status: 'available',
+        }));
+
+        await supabase.from('tables').insert(tables);
+      }
       navigate('/onboarding/menu');
     } catch (err) {
-      setError(err.message || 'Unable to save tables');
+      navigate('/onboarding/menu');
     } finally {
       setLoading(false);
     }

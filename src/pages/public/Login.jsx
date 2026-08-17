@@ -29,27 +29,27 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8" style={{ background: 'var(--background)' }}>
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+    <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4" style={{ background: 'var(--background)' }}>
+      <div className="w-full" style={{ maxWidth: '400px' }}>
         <div className="flex justify-center mb-6">
-          <Link to="/" className="flex items-center gap-2 text-primary">
-            <Icons.Logo size={40} />
-            <span className="headline-md" style={{ color: 'var(--on-surface)' }}>Servora</span>
+          <Link to="/" className="flex items-center gap-3">
+            <Icons.Logo size={44} />
+            <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.01em' }}>Servora</span>
           </Link>
         </div>
-        <h2 className="text-center headline-lg" style={{ color: 'var(--on-surface)' }}>
+        <h2 className="text-center" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--on-surface)', lineHeight: '36px', marginBottom: '8px' }}>
           Welcome back
         </h2>
-        <p className="mt-2 text-center body-md" style={{ color: 'var(--on-surface-variant)' }}>
+        <p className="text-center" style={{ color: 'var(--on-surface-variant)', fontSize: '16px', fontWeight: 500 }}>
           Don't have an account?{' '}
-          <Link to="/register" className="font-medium text-primary hover:underline">
+          <Link to="/register" style={{ color: 'var(--primary)', fontWeight: 600 }}>
             Start your 14-day free trial
           </Link>
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="glass py-8 px-4 sm:px-10" style={{ borderRadius: 'var(--radius-2xl)', boxShadow: '0 24px 80px rgba(0,0,0,0.25)' }}>
+      <div className="w-full" style={{ maxWidth: '400px', marginTop: '32px' }}>
+        <div style={{ background: '#ffffff', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-2xl)', padding: '32px 24px', boxShadow: '0 20px 60px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.04)' }}>
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <Input
               label="Email address"
@@ -58,7 +58,7 @@ export default function Login() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="owner@hotelsiraj.in"
             />
 
             <Input
@@ -68,8 +68,12 @@ export default function Login() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="password123"
             />
+
+            <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-lg)', background: 'var(--primary-fixed)', border: '1px solid var(--primary-container)', fontSize: '13px', color: 'var(--on-primary-fixed-variant)', fontWeight: 500 }}>
+              <strong>Demo credentials:</strong> owner@hotelsiraj.in / password123
+            </div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -104,10 +108,10 @@ export default function Login() {
           <div className="mt-6">
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full" style={{ borderTop: '1px solid var(--glass-border)' }} />
+                <div className="w-full" style={{ borderTop: '1px solid var(--outline-variant)' }} />
               </div>
-              <div className="relative flex justify-center body-sm">
-                <span className="px-2 label-sm" style={{ background: 'var(--glass-strong-bg)', color: 'var(--on-surface-variant)', fontFamily: 'var(--font-mono)' }}>Or continue with</span>
+              <div className="relative flex justify-center">
+                <span className="px-2" style={{ background: '#ffffff', color: 'var(--on-surface-variant)', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>Or continue with</span>
               </div>
             </div>
 

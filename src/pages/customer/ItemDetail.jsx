@@ -22,7 +22,7 @@ export default function ItemDetail() {
         <div className="container">
           <div className="item-detail-empty">
             <p>Item not found</p>
-            <Button variant="primary" onClick={() => navigate('/menu/the-green-table')}>Back to Menu</Button>
+            <Button variant="primary" onClick={() => navigate('/menu/hotel-siraj')}>Back to Menu</Button>
           </div>
         </div>
       </div>
@@ -84,9 +84,9 @@ export default function ItemDetail() {
               </div>
 
               <div className="item-detail-price-block">
-                <span className="item-detail-unit">${item.price.toFixed(2)}</span>
+                <span className="item-detail-unit">₹{item.price.toFixed(0)}</span>
                 {quantity > 1 && (
-                  <span className="item-detail-total">Total: ${itemTotal.toFixed(2)}</span>
+                  <span className="item-detail-total">Total: ₹{itemTotal.toFixed(0)}</span>
                 )}
               </div>
 
@@ -97,7 +97,7 @@ export default function ItemDetail() {
                 onClick={() => { addItem(item, quantity); navigate('/cart'); }}
                 disabled={!item.isAvailable}
               >
-                {item.isAvailable ? `Add to Cart — $${itemTotal.toFixed(2)}` : 'Unavailable'}
+                {item.isAvailable ? `Add to Cart — ₹${itemTotal.toFixed(0)}` : 'Unavailable'}
               </Button>
             </div>
           </div>

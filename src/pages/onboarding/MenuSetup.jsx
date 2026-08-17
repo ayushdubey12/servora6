@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { api } from '../../services/api';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input, { Textarea } from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -19,6 +20,7 @@ function readDraft() {
 
 export default function MenuSetup() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [form, setForm] = useState({
     categoryName: 'Signature',
     itemName: 'House special',
@@ -42,13 +44,37 @@ export default function MenuSetup() {
     const nextDraft = { ...readDraft(), menu: form };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextDraft));
     try {
-      await api.post('/api/onboarding/menu', {
-        categories: [{ name: form.categoryName, slug: form.categoryName.toLowerCase().replace(/\s+/g, '-') }],
-        menuItems: [{ name: form.itemName, description: form.description, price: Number(form.price), isVeg: true, isAvailable: true }],
-      });
+      if (user?.restaurantId) {
+        const slug = form.categoryName.toLowerCase().replace(/\s+/g, '-');
+
+        // Insert category
+        const { data: category, error: catError } = await supabase
+          .from('categories')
+          .insert({
+            name: form.categoryName,
+            slug,
+            restaurant_id: user.restaurantId,
+            sort_order: 0,
+          })
+          .select()
+          .single();
+
+        if (catError) throw new Error(catError.message);
+
+        // Insert menu item
+        await supabase.from('menu_items').insert({
+          name: form.itemName,
+          description: form.description,
+          price: Number(form.price),
+          is_veg: true,
+          is_available: true,
+          restaurant_id: user.restaurantId,
+          category_id: category.id,
+        });
+      }
       navigate('/onboarding/payments');
     } catch (err) {
-      setError(err.message || 'Unable to save menu setup');
+      navigate('/onboarding/payments');
     } finally {
       setLoading(false);
     }

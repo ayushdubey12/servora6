@@ -17,15 +17,13 @@
   border: 1px solid rgba(74, 222, 128, 0.3);
   border-radius: var(--radius-2xl);
   color: var(--success);
-  backdrop-filter: blur(40px);
 }
 
 .onboarding-summary-card {
   width: 100%;
   max-width: 400px;
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  backdrop-filter: blur(40px);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -36,7 +34,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--outline-variant);
 }
 
 .onboarding-summary-row:last-child {

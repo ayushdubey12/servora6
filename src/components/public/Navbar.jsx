@@ -1,7 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Icons } from '../../assets/icons';
-import Button from '../ui/Button';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -29,38 +27,48 @@ export default function Navbar() {
 
   return (
     <nav className={`public-navbar ${isScrolled ? 'scrolled' : ''}`}>
-      <div className="container">
-        <div className="navbar-inner">
-          <Link to="/" className="navbar-brand">
-            <Icons.Logo size={32} />
-            <span className="brand-name">Servora</span>
-          </Link>
+      <div className="navbar-inner">
+        <Link to="/" className="navbar-brand">
+          <span className="brand-name">SERVORA</span>
+        </Link>
 
-          {/* Desktop Nav */}
-          <div className="navbar-links hide-mobile">
-            {navLinks.map((link) => (
-              <NavLink 
-                key={link.name} 
-                to={link.path}
-                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-              >
-                {link.name}
-              </NavLink>
-            ))}
-          </div>
-
-          <div className="navbar-actions hide-mobile">
-            <Link to="/login" className="nav-link">Log in</Link>
-            <Link to="/register">
-              <Button variant="primary" size="sm">Start Free Trial</Button>
-            </Link>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button className="mobile-menu-btn show-mobile-only" onClick={toggleMobileMenu}>
-            {isMobileMenuOpen ? <Icons.X size={24} /> : <Icons.Menu size={24} />}
-          </button>
+        {/* Desktop Nav */}
+        <div className="navbar-links hide-mobile">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.name}
+              to={link.path}
+              className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+            >
+              {link.name}
+            </NavLink>
+          ))}
         </div>
+
+        <div className="navbar-actions hide-mobile">
+          <Link to="/login" className="nav-cta-login">Log in</Link>
+          <Link to="/register">
+            <button className="nav-cta-primary">Request Access</button>
+          </Link>
+        </div>
+
+        {/* Mobile Menu Toggle */}
+        <button className="mobile-menu-btn show-mobile-only" onClick={toggleMobileMenu}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            {isMobileMenuOpen ? (
+              <>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </>
+            )}
+          </svg>
+        </button>
       </div>
 
       {/* Mobile Nav Overlay */}
@@ -68,8 +76,8 @@ export default function Navbar() {
         <div className="mobile-nav-overlay show-mobile-only">
           <div className="mobile-nav-links">
             {navLinks.map((link) => (
-              <Link 
-                key={link.name} 
+              <Link
+                key={link.name}
                 to={link.path}
                 className="mobile-nav-link"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -78,19 +86,20 @@ export default function Navbar() {
               </Link>
             ))}
             <div className="mobile-nav-divider"></div>
-            <Link 
+            <Link
               to="/login"
               className="mobile-nav-link"
               onClick={() => setIsMobileMenuOpen(false)}
             >
               Log in
             </Link>
-            <Link 
+            <Link
               to="/register"
-              className="mobile-nav-link text-primary"
+              className="mobile-nav-link"
+              style={{ color: 'var(--primary)' }}
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Start Free Trial
+              Request Access
             </Link>
           </div>
         </div>

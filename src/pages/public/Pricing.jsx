@@ -51,7 +51,7 @@ export default function Pricing() {
                 </div>
 
                 <p className="body-sm mb-8" style={{ color: 'var(--on-surface-variant)' }}>
-                  {billingCycle === 'yearly' ? `Billed annually ($${price * 12}/year)` : 'Billed monthly'}
+                  {billingCycle === 'yearly' ? `Billed annually (₹{price * 12}/year)` : 'Billed monthly'}
                 </p>
 
                 <Link to="/register" className="w-full">

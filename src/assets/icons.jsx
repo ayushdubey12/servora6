@@ -5,9 +5,23 @@
 
 export const Icons = {
   Logo: ({ size = 32, ...props }) => (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" {...props}>
-      <rect width="32" height="32" rx="8" fill="var(--primary)" />
-      <path d="M10 22V12a2 2 0 012-2h0a2 2 0 012 2v10M14 16h-4M20 22V12a2 2 0 012-2h0a2 2 0 012 2v4a2 2 0 01-2 2h-2" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={size} height={size} viewBox="0 0 48 48" fill="none" {...props}>
+      {/* Clay shadow base */}
+      <rect x="2" y="4" width="44" height="44" rx="16" fill="rgba(0,0,0,0.08)" />
+      {/* Main shape */}
+      <rect x="0" y="0" width="44" height="44" rx="16" fill="var(--primary)" />
+      {/* Inner highlight (top-left light) */}
+      <rect x="0" y="0" width="44" height="44" rx="16" fill="url(#logoHighlight)" />
+      {/* S letterform */}
+      <path d="M16 14.5c0-3 2.5-5 6-5s5.5 2 5.5 4.5c0 2-1.2 3.2-3.5 3.8L19 20v0" stroke="white" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+      <path d="M19 20v0c2.5 0.5 4 1.5 4 3.5s-2 4-5.5 4-5.5-2-5.5-4.5c0-1.8 1-3 3-3.8" stroke="white" strokeWidth="3.5" strokeLinecap="round" fill="none" />
+      <defs>
+        <linearGradient id="logoHighlight" x1="0" y1="0" x2="44" y2="44">
+          <stop offset="0" stopColor="rgba(255,255,255,0.25)" />
+          <stop offset="0.5" stopColor="rgba(255,255,255,0)" />
+          <stop offset="1" stopColor="rgba(0,0,0,0.1)" />
+        </linearGradient>
+      </defs>
     </svg>
   ),
 
@@ -502,6 +516,32 @@ export const Icons = {
   LinkedIn: ({ size = 20, ...props }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" {...props}>
       <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+    </svg>
+  ),
+
+  Calendar: ({ size = 20, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+      <line x1="16" y1="2" x2="16" y2="6" />
+      <line x1="8" y1="2" x2="8" y2="6" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  ),
+
+  Gift: ({ size = 20, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <polyline points="20 12 20 22 4 22 4 12" />
+      <rect x="2" y="7" width="20" height="5" />
+      <line x1="12" y1="22" x2="12" y2="7" />
+      <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z" />
+      <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z" />
+    </svg>
+  ),
+
+  Award: ({ size = 20, ...props }) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <circle cx="12" cy="8" r="7" />
+      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
     </svg>
   ),
 };

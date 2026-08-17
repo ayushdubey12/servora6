@@ -6,9 +6,8 @@ import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import './StaffOrders.css';
 
-const STATUS_FLOW = {
-  ACCEPTED: 'PREPARING',
-  PREPARING: 'READY',
+// Waiter actions: claim (PENDING→ACCEPTED), then pick up READY → SERVED
+const WAITER_STATUS_FLOW = {
   READY: 'SERVED',
   SERVED: 'PAYMENT_PENDING',
 };
@@ -24,25 +23,97 @@ function statusBadgeVariant(s) {
   return 'default';
 }
 
+function OrderCard({ order, user, claiming, claim, release, updateOrderStatus }) {
+  const isMine = order.claimedById === user?.id;
+  const isClaimed = !!order.claimedBy;
+  const next = WAITER_STATUS_FLOW[order.status];
+  const isReady = order.status === 'READY';
+
+  return (
+    <div className={`staff-order-card ${isReady ? 'staff-order-card--ready' : ''}`}>
+      {/* Top row: ID, table, status */}
+      <div className="staff-card-top">
+        <div className="staff-card-top-left">
+          <span className="staff-card-id">#{String(order.id).slice(0, 8)}</span>
+          <span className="staff-card-table">Table {order.tableNumber}</span>
+        </div>
+        <div className="staff-card-top-right">
+          <span className="staff-card-time">
+            {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </span>
+          <Badge variant={statusBadgeVariant(order.status)}>{order.status}</Badge>
+        </div>
+      </div>
+
+      {/* Items — compact inline view */}
+      <div className="staff-card-items">
+        {(order.items || []).map((it, i) => (
+          <span key={i} className="staff-card-item">
+            <strong>{it.quantity}×</strong> {it.menuItem?.name || it.name || 'Item'}
+          </span>
+        ))}
+      </div>
+
+      {/* Bottom row: customer, total, actions */}
+      <div className="staff-card-bottom">
+        <div className="staff-card-bottom-left">
+          <span className="staff-card-customer">
+            <Icons.User size={12} />
+            {order.customerName || 'Guest'}
+          </span>
+          <span className="staff-card-total">₹{order.total?.toFixed(0)}</span>
+          {isClaimed && (
+            <span className={`staff-card-claim ${isMine ? 'staff-card-claim--mine' : ''}`}>
+              <Icons.User size={11} />
+              {isMine ? 'You' : order.claimedBy?.name}
+            </span>
+          )}
+        </div>
+        <div className="staff-card-actions">
+          {!isClaimed && order.status === 'PENDING' && (
+            <Button size="sm" variant="primary" loading={claiming[order.id]} onClick={() => claim(order.id)}>
+              Accept
+            </Button>
+          )}
+          {isClaimed && !isMine && (
+            <span className="staff-card-taken">Taken</span>
+          )}
+          {isClaimed && isMine && next && (
+            <Button size="sm" variant="primary" onClick={() => updateOrderStatus(order.id, next)}>
+              {next === 'SERVED' ? 'Mark Served' : 'Request Payment'}
+            </Button>
+          )}
+          {isClaimed && isMine && isReady && (
+            <span className="staff-card-ready-badge">Ready</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function StaffOrders() {
   const { orders, updateOrderStatus, claimOrder, releaseOrder } = useOrders();
   const { user } = useAuth();
   const [filter, setFilter] = useState('all');
   const [claiming, setClaiming] = useState({});
 
+  const readyOrders = useMemo(() =>
+    orders.filter(o => o.status === 'READY' && !['COMPLETED', 'CANCELLED'].includes(o.status)),
+    [orders]
+  );
+
   const filtered = useMemo(() => {
     if (filter === 'unclaimed') return orders.filter(o => !o.claimedById && !['COMPLETED', 'CANCELLED'].includes(o.status));
-    if (filter === 'mine') return orders.filter(o => o.claimedById === user?.id);
-    if (filter === 'all') return orders;
-    return orders.filter(o => o.status === filter);
-  }, [orders, filter]);
+    if (filter === 'mine') return orders.filter(o => o.claimedById === user?.id && !['COMPLETED', 'CANCELLED'].includes(o.status));
+    if (filter === 'all') return orders.filter(o => !['COMPLETED', 'CANCELLED'].includes(o.status));
+    return orders.filter(o => o.status === filter && !['COMPLETED', 'CANCELLED'].includes(o.status));
+  }, [orders, filter, user]);
 
   const tabs = [
     { key: 'all', label: 'All' },
-    { key: 'unclaimed', label: 'Unclaimed' },
-    { key: 'mine', label: 'Mine' },
-    { key: 'PENDING', label: 'Pending' },
-    { key: 'PREPARING', label: 'Preparing' },
+    { key: 'unclaimed', label: 'Available' },
+    { key: 'mine', label: 'My Orders' },
     { key: 'READY', label: 'Ready' },
   ];
 
@@ -59,76 +130,75 @@ export default function StaffOrders() {
   }, [releaseOrder]);
 
   return (
-    <div className="staff-orders">
-      <div className="container">
-        <h1 className="staff-orders-title">Orders</h1>
-        <div className="status-tabs">
+    <div className="staff-orders-page">
+      <div className="staff-orders-container">
+        {/* Header */}
+        <div className="staff-orders-header">
+          <h1 className="staff-orders-title">Orders</h1>
+          <p className="staff-orders-subtitle">
+            {filtered.length} order{filtered.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+
+        {/* Ready for pickup alert */}
+        {readyOrders.length > 0 && (
+          <div className="staff-ready-alert">
+            <div className="staff-ready-alert-header">
+              <Icons.Bell size={18} />
+              <span>{readyOrders.length} order{readyOrders.length > 1 ? 's' : ''} ready for pickup</span>
+            </div>
+            <div className="staff-ready-alert-list">
+              {readyOrders.map(order => (
+                <div key={order.id} className="staff-ready-alert-item">
+                  <div className="staff-ready-alert-info">
+                    <span className="staff-ready-alert-table">Table {order.tableNumber}</span>
+                    <span className="staff-ready-alert-detail">
+                      {order.items?.length} items · ₹{order.total?.toFixed(0)}
+                    </span>
+                  </div>
+                  <Button size="sm" variant="primary" onClick={() => updateOrderStatus(order.id, 'SERVED')}>
+                    Serve
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Tabs */}
+        <div className="staff-orders-tabs">
           {tabs.map(t => (
-            <button key={t.key} className={`status-tab ${filter === t.key ? 'active' : ''}`} onClick={() => setFilter(t.key)}>
+            <button
+              key={t.key}
+              className={`staff-orders-tab ${filter === t.key ? 'staff-orders-tab--active' : ''}`}
+              onClick={() => setFilter(t.key)}
+            >
               {t.label}
             </button>
           ))}
         </div>
-        <div className="staff-orders-list">
-          {filtered.length === 0 ? (
-            <div className="orders-empty"><p>No orders here yet.</p></div>
-          ) : filtered.map(order => {
-            const isMine = order.claimedById === user?.id;
-            const isClaimed = !!order.claimedBy;
-            const next = STATUS_FLOW[order.status];
-            return (
-              <div key={order.id} className="staff-order-card staff-full">
-                <div className="staff-order-row">
-                  <div className="staff-order-main">
-                    <div className="staff-order-header">
-                      <span className="staff-order-id">#{String(order.id).slice(0, 8)}</span>
-                      <span className="staff-order-table-badge">Table {order.tableNumber}</span>
-                    </div>
-                    <div className="staff-order-items-preview">
-                      {order.items?.map((it, i) => (
-                        <span key={i} className="staff-order-item-chip">{it.quantity}× {it.menuItem?.name || it.name || 'Item'}</span>
-                      ))}
-                    </div>
-                    {isClaimed && (
-                      <div className="staff-order-claims">
-                        <Icons.User size={14} />
-                        <span>{isMine ? 'Taken by you' : `Taken by ${order.claimedBy?.name}`}</span>
-                      </div>
-                    )}
-                  </div>
-                  <div className="staff-order-meta">
-                    <Badge variant={statusBadgeVariant(order.status)}>{order.status}</Badge>
-                    <span className="staff-order-total">${order.total?.toFixed(2)}</span>
-                    <span className="staff-order-customer">{order.customerName}</span>
-                  </div>
-                </div>
-                <div className="staff-order-footer">
-                  <span className="staff-order-time">
-                    {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                  <div className="staff-order-actions">
-                    {!isClaimed && order.status === 'PENDING' && (
-                      <Button size="sm" variant="primary" loading={claiming[order.id]} onClick={() => claim(order.id)}>
-                        Accept Order
-                      </Button>
-                    )}
-                    {isClaimed && !isMine && (
-                      <span className="staff-order-unavailable">Taken by another waiter</span>
-                    )}
-                    {isClaimed && isMine && next && (
-                      <Button size="sm" variant="primary" onClick={() => updateOrderStatus(order.id, next)}>
-                        {next === 'PREPARING' ? 'Start Preparing' : next === 'READY' ? 'Mark Ready' : next === 'SERVED' ? 'Mark Served' : ''}
-                      </Button>
-                    )}
-                    {isClaimed && isMine && !next && order.status !== 'COMPLETED' && order.status !== 'CANCELLED' && (
-                      <span className="staff-order-done">Order {order.status.toLowerCase()}</span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+
+        {/* Order List */}
+        {filtered.length === 0 ? (
+          <div className="staff-orders-empty">
+            <Icons.Package size={40} />
+            <p>No orders here yet.</p>
+          </div>
+        ) : (
+          <div className="staff-orders-list">
+            {filtered.map(order => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                user={user}
+                claiming={claiming}
+                claim={claim}
+                release={release}
+                updateOrderStatus={updateOrderStatus}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

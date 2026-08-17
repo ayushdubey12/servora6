@@ -1,66 +1,103 @@
+/* Plush Clay Inputs — recessed inner-shadow, focus transitions to outset clay */
+
 .input-group { display: flex; flex-direction: column; gap: var(--space-2); }
 .input-label {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--label-md-fontSize);
   font-weight: var(--label-md-fontWeight);
-  color: var(--on-surface-variant);
+  color: var(--on-surface);
   letter-spacing: var(--label-md-letterSpacing);
-  text-transform: uppercase;
 }
 .input-wrapper { position: relative; display: flex; align-items: center; }
 .input-field {
   width: 100%;
-  padding: 10px 14px;
+  padding: 12px 18px;
   font-family: var(--font-sans);
   font-size: var(--body-md-fontSize);
+  font-weight: var(--font-medium);
   color: var(--on-surface);
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: var(--radius-lg);
+  background: var(--surface-container-low);
+  border: 2px solid transparent;
+  border-radius: var(--radius-full);
   transition: all var(--transition-base);
   outline: none;
+  /* Recessed clay effect — inner shadows */
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.06),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.3);
 }
-.input-field::placeholder { color: var(--on-surface-variant); font-family: var(--font-mono); font-size: var(--label-md-fontSize); }
-.input-field:hover { border-color: rgba(255, 255, 255, 0.2); }
+.input-field::placeholder {
+  color: var(--outline);
+  font-weight: var(--font-medium);
+}
+.input-field:hover {
+  background: var(--surface-container);
+  border-color: var(--outline-variant);
+}
 .input-field:focus {
+  /* Transition to outset clay style */
+  background: #ffffff;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(173, 198, 255, 0.1);
-  background: var(--glass-bg);
+  box-shadow:
+    0 0 0 4px rgba(70, 72, 212, 0.1),
+    0 2px 8px rgba(70, 72, 212, 0.1),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
-.input-with-icon { padding-left: 40px; }
+.input-with-icon { padding-left: 44px; }
 .input-icon {
   position: absolute;
-  left: 14px;
-  color: var(--on-surface-variant);
+  left: 16px;
+  color: var(--outline);
   display: flex;
   pointer-events: none;
 }
 .input-toggle {
   position: absolute;
-  right: 12px;
-  color: var(--on-surface-variant);
+  right: 14px;
+  color: var(--outline);
   display: flex;
   padding: 4px;
   cursor: pointer;
   background: none;
   border: none;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
 }
-.input-toggle:hover { color: var(--primary); }
-.input-textarea { min-height: 100px; resize: vertical; line-height: 1.5; }
+.input-toggle:hover { color: var(--primary); background: var(--surface-container); }
+.input-textarea {
+  min-height: 100px;
+  resize: vertical;
+  line-height: 1.5;
+  border-radius: var(--radius-lg);
+}
 .input-select {
   appearance: none;
-  padding-right: 40px;
+  padding-right: 44px;
   cursor: pointer;
   color: var(--on-surface);
 }
 .input-select-arrow {
   position: absolute;
-  right: 14px;
-  color: var(--on-surface-variant);
+  right: 16px;
+  color: var(--outline);
   display: flex;
   pointer-events: none;
 }
 .input-error .input-field { border-color: var(--error); }
-.input-error .input-field:focus { box-shadow: 0 0 0 3px rgba(255, 180, 171, 0.1); }
-.input-error-text { font-family: var(--font-mono); font-size: var(--label-sm-fontSize); color: var(--error); }
-.input-hint { font-family: var(--font-mono); font-size: var(--label-sm-fontSize); color: var(--on-surface-variant); }
+.input-error .input-field:focus {
+  box-shadow:
+    0 0 0 4px rgba(186, 26, 26, 0.08),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+.input-error-text {
+  font-family: var(--font-sans);
+  font-size: var(--label-sm-fontSize);
+  font-weight: var(--font-medium);
+  color: var(--error);
+}
+.input-hint {
+  font-family: var(--font-sans);
+  font-size: var(--label-sm-fontSize);
+  font-weight: var(--font-medium);
+  color: var(--on-surface-variant);
+}

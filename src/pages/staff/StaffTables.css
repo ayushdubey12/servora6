@@ -26,7 +26,7 @@
   gap: 16px;
   padding: 12px 0;
   margin-bottom: 20px;
-  border-bottom: 1px solid var(--glass-border);
+  border-bottom: 1px solid var(--outline-variant);
 }
 
 .legend-item {
@@ -82,8 +82,8 @@
   font-size: 11px;
   font-weight: 600;
   color: var(--on-surface-variant);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
   padding: 2px 8px;
   border-radius: var(--radius-full);
   font-family: var(--font-mono);
@@ -96,13 +96,11 @@
 }
 
 .table-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-left: 3px solid var(--glass-border);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  border-left: 3px solid var(--outline-variant);
   border-radius: var(--radius-lg);
   padding: 14px;
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -111,7 +109,7 @@
 }
 
 .table-card:hover {
-  background: var(--glass-hover-bg);
+  background: var(--surface-container-low);
   transform: translateY(-2px);
 }
 
@@ -166,7 +164,7 @@
   justify-content: space-between;
   align-items: center;
   padding-top: 6px;
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid var(--outline-variant);
   margin-top: 2px;
 }
 

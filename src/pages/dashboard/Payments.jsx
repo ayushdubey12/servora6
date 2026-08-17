@@ -34,9 +34,9 @@ export default function Payments() {
       </div>
 
       <div className="grid grid-3 gap-4">
-        <Stat title="Total Revenue" value={`$${totalCompleted.toLocaleString()}`} trend="up" trendValue={`${payments.filter(p => p.status === 'completed').length} payments`} icon={<Icons.DollarSign size={22} />} />
-        <Stat title="Avg Order Value" value={`$${avgOrder.toFixed(2)}`} trend="up" trendValue="per transaction" icon={<Icons.Receipt size={22} />} />
-        <Stat title="Refunded" value={`$${totalRefunded.toFixed(2)}`} trend="down" trendValue={`${payments.filter(p => p.status === 'refunded').length} refunds`} icon={<Icons.RefreshCw size={22} />} />
+        <Stat title="Total Revenue" value={`₹${totalCompleted.toLocaleString()}`} trend="up" trendValue={`${payments.filter(p => p.status === 'completed').length} payments`} icon={<Icons.DollarSign size={22} />} />
+        <Stat title="Avg Order Value" value={`₹${avgOrder.toFixed(2)}`} trend="up" trendValue="per transaction" icon={<Icons.Receipt size={22} />} />
+        <Stat title="Refunded" value={`₹${totalRefunded.toFixed(2)}`} trend="down" trendValue={`${payments.filter(p => p.status === 'refunded').length} refunds`} icon={<Icons.RefreshCw size={22} />} />
       </div>
 
       <Card>

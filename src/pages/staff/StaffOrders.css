@@ -1,182 +1,325 @@
-.staff-orders {
-  padding-bottom: 80px;
+/* ═══════════════════════════════════════════
+   Staff Orders — Compact, constrained layout
+   ═══════════════════════════════════════════ */
+
+.staff-orders-page {
+  padding-bottom: 40px;
+}
+
+.staff-orders-container {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ── Header ─────────────────────────────── */
+.staff-orders-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 24px 0 16px;
 }
 
 .staff-orders-title {
-  font-size: 28px;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: 'Plus Jakarta Sans', var(--font-sans);
+  font-size: 26px;
+  font-weight: 800;
   color: var(--on-surface);
-  padding: 24px 0 12px;
+  letter-spacing: -0.02em;
 }
 
-.staff-orders-list {
+.staff-orders-subtitle {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+}
+
+/* ── Ready Alert ────────────────────────── */
+.staff-ready-alert {
+  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: var(--radius-xl);
+  background: linear-gradient(135deg, var(--secondary-container), var(--secondary-fixed));
+  border: 2px solid var(--secondary);
+}
+
+.staff-ready-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--on-secondary-container);
+}
+
+.staff-ready-alert-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
-.orders-empty {
-  padding: 48px 24px;
-  text-align: center;
-  color: var(--on-surface-variant);
-}
-
-.staff-order-card.staff-full {
-  padding: 16px;
-}
-
-.staff-order-row {
+.staff-ready-alert-item {
   display: flex;
-  gap: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--glass-border);
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
 }
 
-.staff-order-main {
-  flex: 1;
-  min-width: 0;
+.staff-ready-alert-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.staff-order-header {
+.staff-ready-alert-table {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--on-surface);
+}
+
+.staff-ready-alert-detail {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+}
+
+/* ── Tabs ───────────────────────────────── */
+.staff-orders-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.staff-orders-tabs::-webkit-scrollbar { display: none; }
+
+.staff-orders-tab {
+  padding: 9px 18px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--outline-variant);
+  background: #ffffff;
+  color: var(--on-surface-variant);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: 'Plus Jakarta Sans', var(--font-sans);
+}
+
+.staff-orders-tab:hover {
+  background: var(--surface-container-low);
+  color: var(--on-surface);
+}
+
+.staff-orders-tab--active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+/* ── Order List ─────────────────────────── */
+.staff-orders-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+/* ── Order Card ─────────────────────────── */
+.staff-order-card {
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.15s ease;
+}
+
+.staff-order-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+.staff-order-card--ready {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 1px var(--secondary), 0 4px 16px rgba(164, 48, 115, 0.1);
+}
+
+/* ── Card Top ───────────────────────────── */
+.staff-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.staff-card-top-left {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 10px;
 }
 
-.staff-order-id {
-  font-size: 15px;
+.staff-card-id {
+  font-size: 14px;
   font-weight: 700;
   color: var(--primary);
   font-family: var(--font-mono);
 }
 
-.staff-order-table-badge {
+.staff-card-table {
   padding: 3px 10px;
-  border-radius: var(--radius-sm);
-  background: var(--glass-strong-bg);
-  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  background: var(--surface-container-high);
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--on-surface);
   font-family: var(--font-mono);
 }
 
-.staff-order-items-preview {
+.staff-card-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.staff-card-time {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+}
+
+/* ── Card Items ─────────────────────────── */
+.staff-card-items {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-bottom: 8px;
 }
 
-.staff-order-item-chip {
+.staff-card-item {
   display: inline-flex;
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  background: var(--glass-strong-bg);
-  border: 1px solid var(--glass-border);
-  font-size: 11px;
-  color: var(--on-surface);
-  font-family: var(--font-mono);
-}
-
-.staff-order-notes {
-  display: flex;
-  gap: 6px;
-  padding: 8px 10px;
-  background: var(--glass-subtle-bg);
-  border-radius: var(--radius-md);
-  border-left: 2px solid var(--tertiary);
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--surface-container-lowest);
+  border: 1px solid var(--outline-variant);
   font-size: 12px;
-  color: var(--on-surface-variant);
+  color: var(--on-surface);
 }
 
-.staff-order-notes span {
-  font-weight: 600;
-  color: var(--tertiary);
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  font-size: 10px;
-}
-
-.staff-order-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-  flex-shrink: 0;
-  min-width: 100px;
-}
-
-@media (max-width: 480px) {
-  .staff-order-row {
-    flex-direction: column;
-  }
-
-  .staff-order-meta {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-  }
-}
-
-.staff-order-total {
-  font-size: 15px;
-  font-weight: 700;
+.staff-card-item strong {
   color: var(--primary);
   font-family: var(--font-mono);
 }
 
-.staff-order-customer {
-  font-size: 12px;
-  color: var(--on-surface-variant);
-  font-family: var(--font-mono);
-}
-
-.staff-order-payment {
-  font-size: 11px;
-  color: var(--on-surface-variant);
-  font-family: var(--font-mono);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.staff-order-footer {
+/* ── Card Bottom ────────────────────────── */
+.staff-card-bottom {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-top: 10px;
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid var(--outline-variant);
 }
 
-.staff-order-time {
+.staff-card-bottom-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.staff-card-customer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
+  color: var(--on-surface-variant);
+}
+
+.staff-card-total {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
+
+.staff-card-claim {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--surface-container-high);
+  font-size: 11px;
+  font-weight: 600;
   color: var(--on-surface-variant);
   font-family: var(--font-mono);
 }
 
-.staff-order-actions {
-  display: flex;
-  gap: 8px;
+.staff-card-claim--mine {
+  background: var(--primary-fixed);
+  border: 1px solid var(--primary-fixed-dim);
+  color: var(--primary);
 }
 
-/* Order claiming UI */
-.staff-order-claims {
-  display: inline-flex; align-items: center; gap: 6px;
-  margin-top: 8px; padding: 4px 10px;
+.staff-card-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.staff-card-taken {
+  font-size: 11px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+  font-style: italic;
+  padding: 6px 0;
+}
+
+.staff-card-ready-badge {
+  padding: 5px 14px;
   border-radius: var(--radius-full);
-  background: rgba(173, 198, 255, 0.1);
-  border: 1px solid rgba(173, 198, 255, 0.2);
-  color: var(--primary);
-  font-family: var(--font-mono); font-size: var(--label-sm-fontSize);
+  background: var(--secondary-container);
+  color: var(--on-secondary-container);
+  font-size: 12px;
+  font-weight: 700;
+  animation: staff-pulse 2s ease-in-out infinite;
 }
-.staff-order-unavailable {
-  font-family: var(--font-mono); font-size: var(--label-sm-fontSize);
-  color: var(--on-surface-variant); font-style: italic;
+
+@keyframes staff-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
 }
-.staff-order-done {
-  font-family: var(--font-mono); font-size: var(--label-sm-fontSize);
-  color: var(--success);
+
+/* ── Empty ──────────────────────────────── */
+.staff-orders-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--on-surface-variant);
+}
+
+.staff-orders-empty svg {
+  opacity: 0.4;
+}
+
+.staff-orders-empty p {
+  font-size: 14px;
+}
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 480px) {
+  .staff-orders-container { padding: 0 12px; }
+  .staff-orders-title { font-size: 22px; }
+  .staff-card-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .staff-card-actions { width: 100%; }
+  .staff-card-actions .btn { flex: 1; }
 }

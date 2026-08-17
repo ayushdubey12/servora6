@@ -57,7 +57,7 @@ export default function Offers() {
     )},
     { header: 'Discount', field: 'discount', align: 'center', render: (row) => (
       <Badge variant={row.type === 'percentage' ? 'primary' : 'secondary'} size="sm">
-        {row.type === 'percentage' ? `${row.discount}%` : `$${row.discount}`} OFF
+        {row.type === 'percentage' ? `${row.discount}%` : `₹${row.discount}`} OFF
       </Badge>
     )},
     { header: 'Category', field: 'category', align: 'left', render: (row) => {

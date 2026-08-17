@@ -28,7 +28,7 @@ export default function Feedback() {
             </div>
             <h2>Thank you for your feedback!</h2>
             <p>We appreciate your input. It helps us improve.</p>
-            <Button variant="primary" onClick={() => navigate('/menu/the-green-table')}>Back to Menu</Button>
+            <Button variant="primary" onClick={() => navigate('/menu/hotel-siraj')}>Back to Menu</Button>
           </div>
         </div>
       </div>

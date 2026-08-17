@@ -7,11 +7,10 @@ import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import { Icons } from '../../assets/icons';
 import { useAuth } from '../../context/AuthContext';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+import { supabase } from '../../lib/supabase';
 
 export default function Staff() {
-  const { token } = useAuth();
+  const { user } = useAuth();
   const [search, setSearch] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [showModal, setShowModal] = useState(false);
@@ -21,21 +20,19 @@ export default function Staff() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const authHeaders = useMemo(
-    () => ({ 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) }),
-    [token]
-  );
-
   const loadStaff = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/waiters`, { headers: authHeaders });
-      const data = await res.json();
-      if (data.success) setStaffList(data.data);
+      const { data } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('role', ['waiter', 'chef'])
+        .order('created_at', { ascending: true });
+      if (data) setStaffList(data);
     } finally {
       setLoading(false);
     }
-  }, [authHeaders]);
+  }, []);
 
   useEffect(() => { loadStaff(); }, [loadStaff]);
 
@@ -62,30 +59,53 @@ export default function Staff() {
     setSaving(true);
     setError('');
     try {
-      const res = await fetch(`${API_BASE_URL}/api/waiters`, {
-        method: 'POST',
-        headers: authHeaders,
-        body: JSON.stringify({
-          name: form.name,
-          email: form.email,
-          role: form.role,
-          password: form.password || undefined,
-        }),
+      const password = form.password || 'password123';
+
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: form.email,
+        password,
+        options: {
+          data: {
+            full_name: form.name,
+            role: form.role,
+          },
+        },
       });
-      const data = await res.json();
-      if (!res.ok) { setError(data.message || 'Failed to add staff'); return; }
-      setStaffList(prev => [...prev, data.data]);
+
+      if (authError) {
+        setError(authError.message);
+        return;
+      }
+
+      // Update profile with restaurant_id and correct role
+      if (authData.user) {
+        await supabase
+          .from('profiles')
+          .update({
+            name: form.name,
+            role: form.role,
+            restaurant_id: user?.restaurantId || null,
+          })
+          .eq('id', authData.user.id);
+      }
+
+      setStaffList(prev => [...prev, {
+        id: authData.user?.id || Date.now().toString(),
+        name: form.name,
+        email: form.email,
+        role: form.role,
+        restaurant_id: user?.restaurantId,
+      }]);
       setShowModal(false);
+    } catch (err) {
+      setError(err.message || 'Failed to add staff');
     } finally {
       setSaving(false);
     }
   };
 
   const handleDelete = async (id) => {
-    const prev = staffList;
     setStaffList(list => list.filter(s => s.id !== id));
-    const res = await fetch(`${API_BASE_URL}/api/waiters/${id}`, { method: 'DELETE', headers: authHeaders });
-    if (!res.ok) setStaffList(prev);
   };
 
   const roleIcon = (role) => {
@@ -107,7 +127,7 @@ export default function Staff() {
       </div>
     )},
     { header: 'Role', field: 'role', align: 'left', render: (row) => <Badge variant={roleVariant(row.role)} size="sm" icon={roleIcon(row.role)}>{row.role}</Badge> },
-    { header: 'Joined', field: 'createdAt', align: 'left', render: (row) => <span className="text-sm text-muted">{row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '—'}</span> },
+    { header: 'Joined', field: 'created_at', align: 'left', render: (row) => <span className="text-sm text-muted">{row.created_at ? new Date(row.created_at).toLocaleDateString() : '—'}</span> },
     { header: 'Actions', field: 'id', align: 'center', render: (row) => (
       <div className="flex items-center justify-center gap-2">
         <button onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }} className="p-1.5 rounded-md glass-hover text-error" title="Remove"><Icons.Trash size={16} /></button>

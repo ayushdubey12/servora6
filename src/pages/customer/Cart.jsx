@@ -24,7 +24,7 @@ export default function Cart() {
             <Icons.ShoppingCart size={48} />
             <h3>Your cart is empty</h3>
             <p>Looks like you haven't added anything yet.</p>
-            <Button variant="primary" onClick={() => navigate('/menu/the-green-table')}>Browse Menu</Button>
+            <Button variant="primary" onClick={() => navigate('/menu/hotel-siraj')}>Browse Menu</Button>
           </div>
         ) : (
           <>
@@ -37,7 +37,7 @@ export default function Cart() {
                     </div>
                     <div className="cart-item-details">
                       <h3 className="cart-item-name">{item.name}</h3>
-                      <p className="cart-item-price">${item.price.toFixed(2)} each</p>
+                      <p className="cart-item-price">₹{item.price.toFixed(0)} each</p>
                     </div>
                   </div>
 
@@ -52,7 +52,7 @@ export default function Cart() {
                       </button>
                     </div>
                     <div className="cart-item-total">
-                      ${(item.price * item.quantity).toFixed(2)}
+                      ₹{(item.price * item.quantity).toFixed(0)}
                     </div>
                     <button className="cart-item-remove" onClick={() => removeItem(item.id)}>
                       <Icons.Trash size={16} />
@@ -65,22 +65,22 @@ export default function Cart() {
             <div className="cart-summary">
               <div className="cart-summary-row">
                 <span>Subtotal</span>
-                <span className="cart-summary-value">${subtotal.toFixed(2)}</span>
+                <span className="cart-summary-value">₹{subtotal.toFixed(0)}</span>
               </div>
               <div className="cart-summary-row">
-                <span>Tax (9%)</span>
-                <span className="cart-summary-value">${tax.toFixed(2)}</span>
+                <span>GST (5%)</span>
+                <span className="cart-summary-value">₹{tax.toFixed(0)}</span>
               </div>
               <div className="cart-summary-row cart-summary-total">
                 <span>Total</span>
-                <span className="cart-summary-value">${total.toFixed(2)}</span>
+                <span className="cart-summary-value">₹{total.toFixed(0)}</span>
               </div>
             </div>
 
             <Button variant="primary" fullWidth size="lg" onClick={() => navigate('/checkout')}>
               Proceed to Checkout
             </Button>
-            <Button variant="ghost" fullWidth onClick={() => navigate('/menu/the-green-table')}>
+            <Button variant="ghost" fullWidth onClick={() => navigate('/menu/hotel-siraj')}>
               Continue Shopping
             </Button>
           </>

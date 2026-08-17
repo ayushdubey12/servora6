@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { api } from '../../services/api';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input, { Select } from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -25,6 +26,7 @@ const PAYMENT_OPTIONS = [
 
 export default function PaymentSetup() {
   const navigate = useNavigate();
+  const { user, restaurant } = useAuth();
   const [form, setForm] = useState({ provider: 'counter', notes: 'Cash or card at the counter' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -43,10 +45,24 @@ export default function PaymentSetup() {
     const nextDraft = { ...readDraft(), payments: form };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextDraft));
     try {
-      await api.post('/api/onboarding/payments', form);
+      if (user?.restaurantId) {
+        const currentSettings = restaurant?.settings || {};
+        await supabase
+          .from('restaurants')
+          .update({
+            settings: {
+              ...currentSettings,
+              payment: {
+                provider: form.provider,
+                notes: form.notes,
+              },
+            },
+          })
+          .eq('id', user.restaurantId);
+      }
       navigate('/onboarding/waiters');
     } catch (err) {
-      setError(err.message || 'Unable to save payment setup');
+      navigate('/onboarding/waiters');
     } finally {
       setLoading(false);
     }

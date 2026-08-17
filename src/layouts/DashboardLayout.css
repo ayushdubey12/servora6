@@ -1,3 +1,5 @@
+/* Plush Clay Dashboard Layout */
+
 .dashboard-layout {
   display: flex;
   height: 100vh;
@@ -14,15 +16,16 @@
 
 .dashboard-topbar {
   height: var(--topbar-height);
-  background: var(--glass-strong-bg);
-  backdrop-filter: blur(60px);
-  -webkit-backdrop-filter: blur(60px);
-  border-bottom: 1px solid var(--glass-border);
+  background: #ffffff;
+  border-bottom: 1px solid var(--outline-variant);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-6);
   z-index: var(--z-sticky);
+  box-shadow:
+    inset 0 -1px 2px rgba(0, 0, 0, 0.03),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
 }
 
 .topbar-search {
@@ -39,27 +42,34 @@
 .search-icon {
   position: absolute;
   left: 12px;
-  color: var(--on-surface-variant);
+  color: var(--outline);
 }
 
 .search-input {
   width: 100%;
-  padding: 8px 12px 8px 36px;
-  border: 1px solid var(--glass-border);
+  padding: 10px 16px 10px 40px;
+  border: 2px solid transparent;
   border-radius: var(--radius-full);
-  background: var(--glass-subtle-bg);
+  background: var(--surface-container-low);
+  font-family: var(--font-sans);
   font-size: var(--body-md-fontSize);
+  font-weight: var(--font-medium);
   color: var(--on-surface);
-  transition: all var(--transition-fast);
+  transition: all var(--transition-base);
   outline: none;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.04),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.3);
 }
 
-.search-input::placeholder { color: var(--on-surface-variant); }
+.search-input::placeholder { color: var(--outline); font-weight: var(--font-medium); }
 
 .search-input:focus {
-  background: var(--glass-bg);
+  background: #ffffff;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(173, 198, 255, 0.1);
+  box-shadow:
+    0 0 0 4px rgba(70, 72, 212, 0.1),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
 }
 
 .topbar-actions {
@@ -83,7 +93,10 @@
   cursor: pointer;
 }
 
-.topbar-btn:hover { background: var(--glass-hover-bg); color: var(--on-surface); }
+.topbar-btn:hover {
+  background: var(--surface-container);
+  color: var(--on-surface);
+}
 
 .topbar-badge {
   position: absolute;
@@ -93,14 +106,14 @@
   height: 18px;
   background: var(--error);
   color: var(--on-error);
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: 10px;
-  font-weight: var(--label-md-fontWeight);
+  font-weight: var(--font-bold);
   border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--surface);
+  border: 2px solid #ffffff;
 }
 
 .topbar-profile {
@@ -116,24 +129,27 @@
   background: none;
 }
 
-.topbar-profile:hover { background: var(--glass-hover-bg); border-color: var(--glass-border); }
+.topbar-profile:hover {
+  background: var(--surface-container);
+  border-color: var(--outline-variant);
+}
 
 .profile-info { display: flex; flex-direction: column; }
 
 .profile-name {
   font-family: var(--font-sans);
   font-size: var(--label-md-fontSize);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-bold);
   color: var(--on-surface);
   line-height: 1.2;
 }
 
 .profile-role {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--label-sm-fontSize);
+  font-weight: var(--font-medium);
   color: var(--on-surface-variant);
   text-transform: capitalize;
-  letter-spacing: var(--label-sm-letterSpacing);
 }
 
 .profile-chevron { color: var(--on-surface-variant); }

@@ -50,10 +50,16 @@ import Cart from './pages/customer/Cart';
 import Checkout from './pages/customer/Checkout';
 import OrderTracking from './pages/customer/OrderTracking';
 import Feedback from './pages/customer/Feedback';
+import Reserve from './pages/customer/Reserve';
+import Account from './pages/customer/Account';
+import Payment from './pages/customer/Payment';
 
 // Kitchen
 import KitchenDashboard from './pages/kitchen/KitchenDashboard';
 import KitchenOrders from './pages/kitchen/KitchenOrders';
+
+// Dashboard
+import Reservations from './pages/dashboard/Reservations';
 
 // Staff
 import StaffDashboard from './pages/staff/StaffDashboard';
@@ -94,6 +100,7 @@ export default function App() {
         <Route path="menu" element={<Menu />} />
         <Route path="categories" element={<Categories />} />
         <Route path="tables" element={<Tables />} />
+        <Route path="reservations" element={<Reservations />} />
         <Route path="qr" element={<QRCodes />} />
         <Route path="customers" element={<Customers />} />
         <Route path="staff" element={<Staff />} />
@@ -121,6 +128,15 @@ export default function App() {
       </Route>
       <Route path="/feedback" element={<CustomerLayout />}>
         <Route index element={<Feedback />} />
+      </Route>
+      <Route path="/reserve" element={<CustomerLayout />}>
+        <Route index element={<Reserve />} />
+      </Route>
+      <Route path="/account" element={<CustomerLayout />}>
+        <Route index element={<Account />} />
+      </Route>
+      <Route path="/payment/:orderId" element={<CustomerLayout />}>
+        <Route index element={<Payment />} />
       </Route>
 
       {/* Kitchen Routes */}

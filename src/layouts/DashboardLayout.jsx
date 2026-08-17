@@ -20,6 +20,7 @@ export default function DashboardLayout() {
     { label: 'Live Orders', path: '/dashboard/orders', icon: <Icons.Activity size={20} />, badge: '5' },
     { label: 'Menu Management', path: '/dashboard/menu', icon: <Icons.UtensilsCrossed size={20} /> },
     { label: 'Table Map', path: '/dashboard/tables', icon: <Icons.Table size={20} /> },
+    { label: 'Reservations', path: '/dashboard/reservations', icon: <Icons.Calendar size={20} /> },
     { label: 'QR Codes', path: '/dashboard/qr', icon: <Icons.QrCode size={20} /> },
     { label: 'Customers', path: '/dashboard/customers', icon: <Icons.Users size={20} /> },
     { label: 'Staff & Kitchen', path: '/dashboard/staff', icon: <Icons.ChefHat size={20} /> },

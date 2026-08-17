@@ -1,15 +1,19 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useOrders } from '../../context/OrderContext';
 import { useRestaurant } from '../../context/RestaurantContext';
+import { useCustomerAuth } from '../../context/CustomerAuthContext';
+import CustomerAuthModal from '../../components/customer/CustomerAuthModal';
 import Button from '../../components/ui/Button';
+import { Icons } from '../../assets/icons';
 import './Checkout.css';
 
 export default function Checkout() {
   const { items, subtotal, tax, total, tableNumber, setTableNumber, clearCart } = useCart();
   const { addOrder } = useOrders();
   const { tables, restaurant } = useRestaurant();
+  const { customer } = useCustomerAuth();
   const navigate = useNavigate();
 
   const [customerName, setCustomerName] = useState('');
@@ -18,8 +22,15 @@ export default function Checkout() {
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [authOpen, setAuthOpen] = useState(false);
+
+  // Prefill the customer's name once they sign in
+  useEffect(() => {
+    if (customer?.name && !customerName) setCustomerName(customer.name);
+  }, [customer, customerName]);
 
   const availableTables = useMemo(() => tables.filter(t => t.status === 'available'), [tables]);
+  const estimatedPoints = Math.floor(total);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -40,14 +51,16 @@ export default function Checkout() {
         restaurantId: restaurant?.id,
         tableNumber: Number(selectedTable),
         customerName,
-        items: items.map(i => ({ itemId: i.id, quantity: i.quantity })),
+        items: items.map(i => ({ itemId: i.id, quantity: i.quantity, name: i.name })),
         paymentMethod,
         notes,
+        ...(customer ? { customerId: customer.id } : {}),
       });
       clearCart();
       navigate(`/order/${order.id}`);
     } catch (err) {
-      setError('Failed to place order. Please try again.');
+      console.error('[Checkout] Order failed:', err);
+      setError(err.message || 'Failed to place order. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -60,7 +73,7 @@ export default function Checkout() {
           <div className="checkout-empty">
             <h2>Your cart is empty</h2>
             <p>Add some items before checking out.</p>
-            <Button variant="primary" onClick={() => navigate('/menu/the-green-table')}>Browse Menu</Button>
+            <Button variant="primary" onClick={() => navigate('/menu/hotel-siraj')}>Browse Menu</Button>
           </div>
         </div>
       </div>
@@ -78,6 +91,25 @@ export default function Checkout() {
               {error}
             </div>
           )}
+
+          <div className={`checkout-loyalty ${customer ? 'signed-in' : ''}`}>
+            <Icons.Gift size={18} className="checkout-loyalty-icon" />
+            {customer ? (
+              <span className="checkout-loyalty-text">
+                Signed in as <strong>{customer.name}</strong> — this order earns{' '}
+                <strong>~{estimatedPoints} pts</strong>
+              </span>
+            ) : (
+              <>
+                <span className="checkout-loyalty-text">
+                  Earn <strong>~{estimatedPoints} pts</strong> on this order with a free account.
+                </span>
+                <button type="button" className="checkout-loyalty-cta" onClick={() => setAuthOpen(true)}>
+                  Sign in
+                </button>
+              </>
+            )}
+          </div>
 
           <div className="checkout-section">
             <label className="checkout-label">Customer Name</label>
@@ -147,22 +179,24 @@ export default function Checkout() {
               {items.map(item => (
                 <div key={item.id} className="checkout-item-row">
                   <span>{item.quantity}× {item.name}</span>
-                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                  <span>₹{(item.price * item.quantity).toFixed(0)}</span>
                 </div>
               ))}
             </div>
             <div className="checkout-summary-rows">
-              <div className="checkout-summary-row"><span>Subtotal</span><span>${subtotal.toFixed(2)}</span></div>
-              <div className="checkout-summary-row"><span>Tax (9%)</span><span>${tax.toFixed(2)}</span></div>
-              <div className="checkout-summary-row checkout-total"><span>Total</span><span>${total.toFixed(2)}</span></div>
+              <div className="checkout-summary-row"><span>Subtotal</span><span>₹{subtotal.toFixed(0)}</span></div>
+              <div className="checkout-summary-row"><span>GST (5%)</span><span>₹{tax.toFixed(0)}</span></div>
+              <div className="checkout-summary-row checkout-total"><span>Total</span><span>₹{total.toFixed(0)}</span></div>
             </div>
           </div>
 
           <Button type="submit" variant="primary" fullWidth size="lg" loading={isSubmitting}>
-            Place Order — ${total.toFixed(2)}
+            Place Order — ₹{total.toFixed(0)}
           </Button>
         </form>
       </div>
+
+      <CustomerAuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />
     </div>
   );
 }

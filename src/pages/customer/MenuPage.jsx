@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRestaurant } from '../../context/RestaurantContext';
 import { useCart } from '../../context/CartContext';
@@ -10,8 +10,19 @@ export default function MenuPage() {
   const { restaurantSlug } = useParams();
   const { categories, getMenuByCategory, getCategoryName } = useRestaurant();
   const { addItem } = useCart();
-  const [activeCategory, setActiveCategory] = useState(categories[0]?.id || '');
+  const [activeCategory, setActiveCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Sync activeCategory when categories load from backend (replaces mock IDs with real DB CUIDs)
+  useEffect(() => {
+    if (categories.length > 0 && !activeCategory) {
+      setActiveCategory(categories[0].id);
+    } else if (categories.length > 0 && !categories.find(c => c.id === activeCategory)) {
+      // If the current activeCategory doesn't exist in the new categories list,
+      // it means mock data was replaced by real data — reset to the first category
+      setActiveCategory(categories[0].id);
+    }
+  }, [categories, activeCategory]);
   const navigate = useNavigate();
 
   const menuByCategory = useMemo(() => {
@@ -92,7 +103,7 @@ export default function MenuPage() {
                       </div>
                       <p className="menu-item-desc">{item.description}</p>
                     </div>
-                    <span className="menu-item-price">${item.price.toFixed(2)}</span>
+                    <span className="menu-item-price">₹{item.price.toFixed(0)}</span>
                   </div>
                   <div className="menu-item-footer">
                     <div className="menu-item-meta">

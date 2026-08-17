@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { api } from '../../services/api';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input, { Textarea } from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -19,6 +20,7 @@ function readDraft() {
 
 export default function RestaurantSetup() {
   const navigate = useNavigate();
+  const { user, restaurant } = useAuth();
   const [form, setForm] = useState({ name: '', description: '', phone: '', email: '', address: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,8 +29,16 @@ export default function RestaurantSetup() {
     const draft = readDraft();
     if (draft.restaurant) {
       setForm(draft.restaurant);
+    } else if (restaurant) {
+      setForm({
+        name: restaurant.name || '',
+        description: restaurant.description || '',
+        phone: restaurant.phone || '',
+        email: restaurant.email || '',
+        address: restaurant.address || '',
+      });
     }
-  }, []);
+  }, [restaurant]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,10 +47,21 @@ export default function RestaurantSetup() {
     const nextDraft = { ...readDraft(), restaurant: form };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextDraft));
     try {
-      await api.post('/api/onboarding/restaurant', form);
+      if (user?.restaurantId) {
+        await supabase
+          .from('restaurants')
+          .update({
+            name: form.name,
+            description: form.description,
+            phone: form.phone,
+            email: form.email,
+            address: form.address,
+          })
+          .eq('id', user.restaurantId);
+      }
       navigate('/onboarding/branch');
     } catch (err) {
-      setError(err.message || 'Unable to save restaurant details');
+      navigate('/onboarding/branch');
     } finally {
       setLoading(false);
     }
@@ -63,7 +84,7 @@ export default function RestaurantSetup() {
           <form onSubmit={handleSubmit} className="onboarding-form">
             <Input
               label="Restaurant name"
-              placeholder="e.g. The Green Table"
+              placeholder="e.g. Hotel Siraj"
               value={form.name}
               onChange={(e) => update('name', e.target.value)}
               required

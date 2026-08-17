@@ -24,6 +24,8 @@ model Restaurant {
   menuItems    MenuItem[]
   tables       Table[]
   orders       Order[]
+  customers    Customer[]
+  reservations Reservation[]
 }
 
 model User {
@@ -96,6 +98,9 @@ model Order {
   total         Float       @default(0)
   claimedById   String?
   claimedBy     User?       @relation("ClaimedBy", fields: [claimedById], references: [id])
+  customerId    String?
+  customer      Customer?   @relation(fields: [customerId], references: [id])
+  pointsEarned  Int         @default(0)
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   items         OrderItem[]
@@ -124,4 +129,39 @@ model Payment {
   status     String
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Customer {
+  id           String        @id @default(cuid())
+  restaurantId String?
+  restaurant   Restaurant?   @relation(fields: [restaurantId], references: [id])
+  name         String
+  email        String        @unique
+  phone        String?
+  password     String
+  points       Int           @default(0)
+  totalSpent   Float         @default(0)
+  visitCount   Int           @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  orders       Order[]
+  reservations Reservation[]
+}
+
+model Reservation {
+  id           String     @id @default(cuid())
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+  customerId   String?
+  customer     Customer?  @relation(fields: [customerId], references: [id])
+  customerName String
+  phone        String?
+  email        String?
+  partySize    Int
+  date         String // YYYY-MM-DD
+  time         String // HH:mm
+  notes        String?
+  status       String     @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 }

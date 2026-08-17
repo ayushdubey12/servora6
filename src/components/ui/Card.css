@@ -1,35 +1,59 @@
+/* Plush Clay Cards — white containers with soft float shadow */
+
 .card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
   border-radius: var(--radius-xl);
   overflow: hidden;
   transition: all var(--transition-base);
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.05),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.03);
 }
 .card-padded { padding: var(--space-6); }
-.card-hover:hover { background: var(--glass-hover-bg); border-color: rgba(255,255,255,0.15); }
+.card-hover:hover {
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.08),
+    inset 0 2px 4px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
 .card-clickable { cursor: pointer; }
-.card-clickable:hover { background: var(--glass-hover-bg); transform: translateY(-1px); border-color: rgba(255,255,255,0.15); }
-.card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4); }
+.card-clickable:hover {
+  box-shadow:
+    0 8px 40px rgba(0, 0, 0, 0.08),
+    inset 0 2px 4px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
 .card-header-content { flex: 1; min-width: 0; }
 .card-title {
   font-family: var(--font-sans);
   font-size: var(--body-lg-fontSize);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-bold);
   color: var(--on-surface);
   line-height: var(--headline-md-lineHeight);
 }
 .card-subtitle {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--label-md-fontSize);
+  font-weight: var(--font-medium);
   color: var(--on-surface-variant);
   margin-top: var(--space-1);
-  letter-spacing: var(--label-md-letterSpacing);
 }
 .card-body { /* flex child */ }
 .card-footer {
-  display: flex; align-items: center; gap: var(--space-3);
-  margin-top: var(--space-4); padding-top: var(--space-4);
-  border-top: 1px solid var(--glass-border);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--outline-variant);
 }

@@ -2,6 +2,10 @@
   padding-bottom: 80px;
 }
 
+.staff-dashboard .container {
+  max-width: 800px;
+}
+
 .staff-dash-header {
   padding: 24px 0 20px;
 }
@@ -34,12 +38,10 @@
 }
 
 .staff-stat-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
   border-radius: var(--radius-lg);
   padding: 16px;
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -47,7 +49,7 @@
 }
 
 .staff-stat-card:hover {
-  background: var(--glass-hover-bg);
+  background: var(--surface-container-low);
   border-color: rgba(255, 255, 255, 0.15);
 }
 
@@ -91,8 +93,8 @@
   width: 36px;
   height: 36px;
   border-radius: var(--radius-md);
-  background: var(--glass-strong-bg);
-  border: 1px solid var(--glass-border);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -153,12 +155,10 @@
 }
 
 .staff-order-card {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
   border-radius: var(--radius-lg);
   padding: 14px 16px;
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
   cursor: pointer;
   transition: all var(--transition-fast);
   display: flex;
@@ -167,7 +167,7 @@
 }
 
 .staff-order-card:hover {
-  background: var(--glass-hover-bg);
+  background: var(--surface-container-low);
   border-color: rgba(255, 255, 255, 0.15);
 }
 
@@ -204,8 +204,8 @@
   display: inline-flex;
   padding: 2px 8px;
   border-radius: var(--radius-sm);
-  background: var(--glass-strong-bg);
-  border: 1px solid var(--glass-border);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
   font-size: 11px;
   color: var(--on-surface);
   font-family: var(--font-mono);
@@ -238,14 +238,14 @@
   width: 64px;
   padding: 8px 10px;
   border-radius: var(--radius-md);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .staff-table-mini:hover {
-  background: var(--glass-hover-bg);
+  background: var(--surface-container-low);
 }
 
 .staff-table-mini.status-occupied {
@@ -281,8 +281,8 @@
   padding: 24px; text-align: center;
   color: var(--on-surface-variant);
   font-family: var(--font-mono); font-size: var(--label-md-fontSize);
-  background: var(--glass-subtle-bg);
-  border: 1px dashed var(--glass-border);
+  background: var(--surface-container-low);
+  border: 1px dashed var(--outline-variant);
   border-radius: var(--radius-xl);
 }
 .staff-order-card-footer {

@@ -41,35 +41,24 @@ export default function Contact() {
 
             <div className="flex flex-col gap-8 mb-12">
               <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary flex-shrink-0" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(var(--glass-blur))' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary flex-shrink-0" style={{ background: 'var(--primary-fixed)', border: '1px solid var(--primary-fixed-dim)' }}>
                   <Icons.Mail size={24} />
                 </div>
                 <div>
                   <h3 className="headline-md mb-1" style={{ color: 'var(--on-surface)' }}>Email us</h3>
                   <p className="body-md mb-2" style={{ color: 'var(--on-surface-variant)' }}>Our friendly team is here to help.</p>
-                  <a href="mailto:hello@servora.com" className="body-md font-medium text-primary hover:underline">hello@servora.com</a>
+                  <a href="mailto:hello.servora@gmail.com" className="body-md font-medium" style={{ color: 'var(--primary)' }}>hello.servora@gmail.com</a>
                 </div>
               </div>
 
               <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary flex-shrink-0" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(var(--glass-blur))' }}>
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary flex-shrink-0" style={{ background: 'var(--primary-fixed)', border: '1px solid var(--primary-fixed-dim)' }}>
                   <Icons.MapPin size={24} />
                 </div>
                 <div>
                   <h3 className="headline-md mb-1" style={{ color: 'var(--on-surface)' }}>Visit us</h3>
                   <p className="body-md mb-2" style={{ color: 'var(--on-surface-variant)' }}>Come say hello at our office HQ.</p>
-                  <p className="body-md font-medium" style={{ color: 'var(--on-surface)' }}>100 Market St, San Francisco, CA 94103</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary flex-shrink-0" style={{ background: 'var(--glass-bg)', border: '1px solid var(--glass-border)', backdropFilter: 'blur(var(--glass-blur))' }}>
-                  <Icons.Phone size={24} />
-                </div>
-                <div>
-                  <h3 className="headline-md mb-1" style={{ color: 'var(--on-surface)' }}>Call us</h3>
-                  <p className="body-md mb-2" style={{ color: 'var(--on-surface-variant)' }}>Mon-Fri from 8am to 5pm PST.</p>
-                  <a href="tel:+18001234567" className="body-md font-medium text-primary hover:underline">+1 (800) 123-4567</a>
+                  <p className="body-md font-medium" style={{ color: 'var(--on-surface)' }}>Jaipur, Rajasthan, India</p>
                 </div>
               </div>
             </div>
@@ -112,7 +101,7 @@ export default function Contact() {
                   id="restaurant"
                   value={formData.restaurant}
                   onChange={handleChange}
-                  placeholder="The Green Table"
+                  placeholder="Hotel Siraj"
                 />
 
                 <div className="input-group">
@@ -132,7 +121,7 @@ export default function Contact() {
                   Send Message
                 </Button>
 
-                <p className="label-sm text-center mt-4" style={{ color: 'var(--on-surface-variant)', fontFamily: 'var(--font-mono)' }}>
+                <p className="label-sm text-center mt-4" style={{ color: 'var(--on-surface-variant)' }}>
                   By submitting this form, you agree to our Privacy Policy.
                 </p>
               </form>

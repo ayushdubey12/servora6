@@ -32,7 +32,7 @@ export function CartProvider({ children }) {
 
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
   const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const tax = subtotal * 0.09;
+  const tax = subtotal * 0.05;
   const total = subtotal + tax;
 
   return (

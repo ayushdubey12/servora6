@@ -1,3 +1,5 @@
+/* Plush Clay Kitchen Layout */
+
 .kitchen-layout {
   display: flex;
   flex-direction: column;
@@ -7,14 +9,15 @@
 
 .kitchen-header {
   height: 64px;
-  background: var(--glass-strong-bg);
-  backdrop-filter: blur(60px);
-  -webkit-backdrop-filter: blur(60px);
-  border-bottom: 1px solid var(--glass-border);
+  background: #ffffff;
+  border-bottom: 1px solid var(--outline-variant);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 var(--space-6);
+  box-shadow:
+    inset 0 -1px 2px rgba(0, 0, 0, 0.03),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
 }
 
 .kitchen-header-left {
@@ -26,7 +29,7 @@
 .kitchen-title {
   font-family: var(--font-sans);
   font-size: var(--body-lg-fontSize);
-  font-weight: var(--font-semibold);
+  font-weight: var(--font-extrabold);
   color: var(--on-surface);
 }
 
@@ -37,10 +40,10 @@
 }
 
 .kitchen-time {
-  font-family: var(--font-mono);
+  font-family: var(--font-sans);
   font-size: var(--label-md-fontSize);
+  font-weight: var(--font-semibold);
   color: var(--on-surface-variant);
-  letter-spacing: var(--label-md-letterSpacing);
 }
 
 .kitchen-logout {
@@ -48,17 +51,22 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-full);
   color: var(--on-surface-variant);
-  background: none;
-  border: 1px solid var(--glass-border);
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-base);
   font-family: var(--font-sans);
   font-size: var(--body-md-fontSize);
+  font-weight: var(--font-semibold);
 }
 
-.kitchen-logout:hover { background: var(--glass-hover-bg); color: var(--on-surface); }
+.kitchen-logout:hover {
+  background: var(--error-container);
+  color: var(--error);
+  border-color: var(--error);
+}
 
 .kitchen-main {
   flex: 1;

@@ -1,29 +1,40 @@
+/* Plush Clay Tabs — pill-shaped tab triggers */
+
 .tabs-list {
-  display: flex; gap: var(--space-1);
+  display: flex;
+  gap: var(--space-1);
   padding: var(--space-1);
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-lg);
-  backdrop-filter: blur(8px);
+  background: var(--surface-container);
+  border-radius: var(--radius-full);
+  /* Recessed clay effect */
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.06),
+    inset 0 -1px 2px rgba(255, 255, 255, 0.3);
 }
 .tab-trigger {
   flex: 1;
   padding: var(--space-2) var(--space-4);
   font-family: var(--font-sans);
   font-size: var(--body-md-fontSize);
-  font-weight: var(--font-medium);
+  font-weight: var(--font-semibold);
   color: var(--on-surface-variant);
   background: none;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-full);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-base);
   text-align: center;
 }
-.tab-trigger:hover { color: var(--on-surface); background: var(--glass-hover-bg); }
+.tab-trigger:hover {
+  color: var(--on-surface);
+  background: rgba(255, 255, 255, 0.5);
+}
 .tab-trigger.active {
-  background: var(--glass-strong-bg);
+  background: #ffffff;
   color: var(--primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 2px 12px rgba(0, 0, 0, 0.06),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.03);
 }
 .tab-content { padding: var(--space-6) 0; }

@@ -24,9 +24,9 @@ export default function Analytics() {
       </div>
 
       <div className="grid grid-4 gap-4">
-        <Stat title="Today's Revenue" value={`$${revenueData.today.toLocaleString()}`} trend={revenueData.today >= revenueData.yesterday ? 'up' : 'down'} trendValue={`${((revenueData.today - revenueData.yesterday) / Math.max(revenueData.yesterday, 1) * 100).toFixed(1)}%`} icon={<Icons.DollarSign size={22} />} />
+        <Stat title="Today's Revenue" value={`₹${revenueData.today.toLocaleString()}`} trend={revenueData.today >= revenueData.yesterday ? 'up' : 'down'} trendValue={`${((revenueData.today - revenueData.yesterday) / Math.max(revenueData.yesterday, 1) * 100).toFixed(1)}%`} icon={<Icons.DollarSign size={22} />} />
         <Stat title="Weekly Orders" value={String(ordersData.thisWeek)} trend="up" trendValue={`${ordersData.thisWeek - ordersData.lastWeek} vs last`} icon={<Icons.BarChart size={22} />} />
-        <Stat title="This Month" value={`$${revenueData.thisMonth.toLocaleString()}`} trend="up" trendValue={`${((revenueData.thisMonth - revenueData.lastMonth) / Math.max(revenueData.lastMonth, 1) * 100).toFixed(1)}%`} icon={<Icons.TrendingUp size={22} />} />
+        <Stat title="This Month" value={`₹${revenueData.thisMonth.toLocaleString()}`} trend="up" trendValue={`${((revenueData.thisMonth - revenueData.lastMonth) / Math.max(revenueData.lastMonth, 1) * 100).toFixed(1)}%`} icon={<Icons.TrendingUp size={22} />} />
         <Stat title="Total Customers" value={String(analyticsData.customers.total)} trend="up" trendValue={`${analyticsData.customers.new} new today`} icon={<Icons.Users size={22} />} />
       </div>
 
@@ -38,7 +38,7 @@ export default function Analytics() {
               {revenueByDay.map(day => (
                 <div key={day.day} className="flex flex-col items-center gap-2 flex-1">
                   <div className="w-full bg-surface-container-high rounded-t-md relative" style={{ height: '100%' }}>
-                    <div className="absolute bottom-0 left-0 right-0 bg-primary rounded-t-md transition-all" style={{ height: `${(day.revenue / maxRevenue) * 100}%` }} title={`$${day.revenue}`}></div>
+                    <div className="absolute bottom-0 left-0 right-0 bg-primary rounded-t-md transition-all" style={{ height: `${(day.revenue / maxRevenue) * 100}%` }} title={`₹${day.revenue}`}></div>
                   </div>
                   <span className="text-xs text-muted font-mono">{day.day}</span>
                 </div>

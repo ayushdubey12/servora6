@@ -1,85 +1,101 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOrders } from '../../context/OrderContext';
+import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
-import Stat from '../../components/ui/Stat';
+import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import './KitchenDashboard.css';
 
-export default function KitchenDashboard() {
-  const { newOrders, preparingOrders, readyOrders, activeOrders, completedOrders } = useOrders();
-
-  const stats = useMemo(() => [
-    { title: 'Active Orders', value: activeOrders.length, trend: 'up', trendValue: `${activeOrders.length} now`, icon: <Icons.Activity size={20} /> },
-    { title: 'New', value: newOrders.length, trend: 'up', trendValue: 'needs action', icon: <Icons.Bell size={20} />, variant: 'new' },
-    { title: 'Preparing', value: preparingOrders.length, trend: 'up', trendValue: 'in progress', icon: <Icons.Clock size={20} />, variant: 'preparing' },
-    { title: 'Ready', value: readyOrders.length, trend: 'up', trendValue: 'to serve', icon: <Icons.CheckCircle size={20} />, variant: 'ready' },
-  ], [newOrders.length, preparingOrders.length, readyOrders.length, activeOrders.length]);
-
-  const navigate = useNavigate();
+function MiniOrderCard({ order }) {
+  const statusColors = {
+    PENDING: 'var(--primary)',
+    ACCEPTED: 'var(--tertiary)',
+    PREPARING: 'var(--secondary)',
+    READY: 'var(--success)',
+  };
 
   return (
-    <div className="kitchen-dashboard">
-      <div className="container">
-        <div className="kitchen-dash-header">
-          <div>
-            <h1 className="kitchen-dash-title">Kitchen Overview</h1>
-            <p className="kitchen-dash-time">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+    <div className={`kds-mini-card ${order.status === 'READY' ? 'kds-mini-card--ready' : ''}`}>
+      <div className="kds-mini-bar" style={{ background: statusColors[order.status] || 'var(--primary)' }} />
+      <div className="kds-mini-top">
+        <span className="kds-mini-id">#{String(order.id).slice(0, 8)}</span>
+        <Badge variant={order.status === 'PENDING' ? 'primary' : order.status === 'PREPARING' ? 'tertiary' : order.status === 'READY' ? 'secondary' : 'default'}>
+          {order.status}
+        </Badge>
+      </div>
+      <div className="kds-mini-table">Table {order.tableNumber}</div>
+      <div className="kds-mini-items">
+        {(order.items || []).slice(0, 3).map((it, i) => (
+          <span key={i} className="kds-mini-item">{it.quantity}× {it.menuItem?.name || it.name}</span>
+        ))}
+        {(order.items?.length || 0) > 3 && <span className="kds-mini-more">+{order.items.length - 3} more</span>}
+      </div>
+      <div className="kds-mini-footer">
+        <span className="kds-mini-total">₹{order.total?.toFixed(0)}</span>
+        <span className="kds-mini-customer">{order.customerName || 'Guest'}</span>
+      </div>
+    </div>
+  );
+}
+
+export default function KitchenDashboard() {
+  const { newOrders, preparingOrders, readyOrders, activeOrders } = useOrders();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const stats = useMemo(() => [
+    { label: 'New', value: newOrders.length, color: 'var(--primary)', icon: <Icons.Bell size={18} /> },
+    { label: 'Cooking', value: preparingOrders.length, color: 'var(--tertiary)', icon: <Icons.Clock size={18} /> },
+    { label: 'Ready', value: readyOrders.length, color: 'var(--success)', icon: <Icons.CheckCircle size={18} /> },
+  ], [newOrders.length, preparingOrders.length, readyOrders.length]);
+
+  return (
+    <div className="kds-dash">
+      <div className="kds-dash-container">
+        {/* Header */}
+        <div className="kds-dash-header">
+          <div className="kds-dash-header-left">
+            <h1 className="kds-dash-title">Kitchen</h1>
+            <p className="kds-dash-time">{new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
           </div>
+          <Button variant="primary" size="sm" icon={<Icons.Activity size={14} />} onClick={() => navigate('/kitchen/orders')}>
+            View All Orders
+          </Button>
         </div>
 
-        <div className="kitchen-stats-grid">
-          {stats.map(stat => (
-            <div key={stat.title} className={`kitchen-stat-card ${stat.variant ? `variant-${stat.variant}` : ''}`} onClick={() => stat.variant === 'new' ? navigate('/kitchen/orders') : null}>
-              <div className="kitchen-stat-content">
-                <span className="kitchen-stat-label">{stat.title}</span>
-                <span className="kitchen-stat-value">{stat.value}</span>
-                <span className="kitchen-stat-trend">{stat.trendValue}</span>
+        {/* Quick Stats */}
+        <div className="kds-dash-stats">
+          {stats.map(s => (
+            <div key={s.label} className="kds-dash-stat" style={{ borderColor: s.color }}>
+              <div className="kds-dash-stat-icon" style={{ background: `${s.color}15`, color: s.color }}>{s.icon}</div>
+              <div className="kds-dash-stat-info">
+                <span className="kds-dash-stat-value">{s.value}</span>
+                <span className="kds-dash-stat-label">{s.label}</span>
               </div>
-              <div className="kitchen-stat-icon">{stat.icon}</div>
             </div>
           ))}
         </div>
 
+        {/* New Orders Alert */}
         {newOrders.length > 0 && (
-          <div className="kitchen-alerts">
-            <h2 className="kitchen-alerts-title">
-              <Icons.Bell size={18} />
-              Needs Attention
-            </h2>
-            <div className="kitchen-alerts-list">
-              {newOrders.map(order => (
-                <div key={order.id} className="alert-item" onClick={() => navigate('/kitchen/orders')}>
-                  <span className="alert-table">Table {order.tableNumber}</span>
-                  <span className="alert-desc">{order.items?.length || 0} items</span>
-                  <Icons.ChevronRight size={16} />
-                </div>
-              ))}
+          <div className="kds-dash-alert">
+            <div className="kds-dash-alert-header">
+              <Icons.Bell size={16} />
+              <span>{newOrders.length} new order{newOrders.length > 1 ? 's' : ''} — tap to manage</span>
             </div>
           </div>
         )}
 
-        {activeOrders.length > 0 && (
-          <div className="kitchen-recent">
-            <h2 className="kitchen-recent-title">Active Orders</h2>
-            <div className="kitchen-recent-list">
-              {activeOrders.slice(0, 5).map(order => (
-                <div key={order.id} className="recent-item">
-                  <div className="recent-item-left">
-                    <span className="recent-order-id">#{String(order.id).slice(0, 8)}</span>
-                    <span className="recent-table">Table {order.tableNumber}</span>
-                  </div>
-                  <Badge variant={order.status === 'PENDING' ? 'primary' : order.status === 'PREPARING' ? 'tertiary' : order.status === 'READY' ? 'secondary' : 'default'}>
-                    {order.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
+        {/* Active Orders Grid */}
+        {activeOrders.length > 0 ? (
+          <div className="kds-dash-grid">
+            {activeOrders.map(order => (
+              <MiniOrderCard key={order.id} order={order} />
+            ))}
           </div>
-        )}
-
-        {activeOrders.length === 0 && (
-          <div className="kitchen-empty">
+        ) : (
+          <div className="kds-dash-empty">
             <Icons.CheckCircle size={40} />
             <h3>All caught up!</h3>
             <p>No active orders right now.</p>

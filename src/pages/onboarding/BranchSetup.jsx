@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { api } from '../../services/api';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input, { Textarea } from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
@@ -19,6 +20,7 @@ function readDraft() {
 
 export default function BranchSetup() {
   const navigate = useNavigate();
+  const { user, restaurant } = useAuth();
   const [form, setForm] = useState({ name: '', address: '', phone: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,8 +29,14 @@ export default function BranchSetup() {
     const draft = readDraft();
     if (draft.branch) {
       setForm(draft.branch);
+    } else if (restaurant) {
+      setForm({
+        name: restaurant.name || '',
+        address: restaurant.address || '',
+        phone: restaurant.phone || '',
+      });
     }
-  }, []);
+  }, [restaurant]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,10 +45,18 @@ export default function BranchSetup() {
     const nextDraft = { ...readDraft(), branch: form };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextDraft));
     try {
-      await api.post('/api/onboarding/branch', form);
+      if (user?.restaurantId) {
+        await supabase
+          .from('restaurants')
+          .update({
+            address: form.address,
+            phone: form.phone,
+          })
+          .eq('id', user.restaurantId);
+      }
       navigate('/onboarding/tables');
     } catch (err) {
-      setError(err.message || 'Unable to save branch details');
+      navigate('/onboarding/tables');
     } finally {
       setLoading(false);
     }

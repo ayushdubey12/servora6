@@ -7,32 +7,57 @@ import { Icons } from '../../assets/icons';
 import { useOrders } from '../../context/OrderContext';
 import { useRestaurant } from '../../context/RestaurantContext';
 import { useAuth } from '../../context/AuthContext';
-import { analyticsData, notifications, orders as allOrders } from '../../data/mockData';
-
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+import { supabase } from '../../lib/supabase';
 
 export default function Dashboard() {
   const { orders } = useOrders();
   const { tables, menu } = useRestaurant();
-  const { token } = useAuth();
+  const { user } = useAuth();
   const [waiterStats, setWaiterStats] = useState([]);
 
-  // Load waiter performance stats and refresh whenever orders change (realtime)
+  // Load waiter performance stats from Supabase
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/stats/waiters`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-    })
-      .then(r => r.json())
-      .then(d => { if (d.success) setWaiterStats(d.data); })
-      .catch(() => {});
-  }, [token, orders]);
+    async function loadStats() {
+      try {
+        // Fetch all profiles with waiter/chef role
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, name, email, role')
+          .in('role', ['waiter', 'chef']);
+
+        if (!profiles?.length) { setWaiterStats([]); return; }
+
+        // Fetch all orders that have been claimed
+        const { data: claimedOrders } = await supabase
+          .from('orders')
+          .select('id, claimed_by_id, status, total');
+
+        if (!claimedOrders) { setWaiterStats([]); return; }
+
+        // Compute stats per waiter
+        const stats = profiles.map(p => {
+          const myOrders = claimedOrders.filter(o => o.claimed_by_id === p.id);
+          const claimed = myOrders.length;
+          const fulfilled = myOrders.filter(o => o.status === 'COMPLETED' || o.status === 'PAID').length;
+          const revenue = myOrders
+            .filter(o => o.status === 'COMPLETED' || o.status === 'PAID')
+            .reduce((sum, o) => sum + (o.total || 0), 0);
+          return { ...p, claimed, fulfilled, revenue };
+        });
+
+        setWaiterStats(stats.filter(s => s.claimed > 0));
+      } catch {
+        setWaiterStats([]);
+      }
+    }
+    loadStats();
+  }, [orders]);
 
   const totalRevenue = useMemo(() => orders.reduce((sum, o) => sum + (o.total || 0), 0), [orders]);
   const activeCount = orders.filter(o => !['COMPLETED', 'CANCELLED'].includes(o.status)).length;
   const uniqueCustomers = new Set(orders.map(o => o.customerName)).size;
 
   const recentOrders = useMemo(() => [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5), [orders]);
-  const recentNotifications = notifications.slice(0, 5);
 
   const orderColumns = [
     { header: 'Order ID', field: 'id', align: 'left', render: (row) => `#${String(row.id).slice(0, 8)}` },
@@ -42,12 +67,6 @@ export default function Dashboard() {
     { header: 'Time', field: 'createdAt', align: 'left', render: (row) => new Date(row.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) },
   ];
 
-  const notifIcon = (type) => {
-    const map = { new_order: Icons.ShoppingCart, call_waiter: Icons.Bell, bill_request: Icons.Receipt, order_ready: Icons.Check, new_review: Icons.Star, low_stock: Icons.Package };
-    const Comp = map[type] || Icons.Bell;
-    return <Comp size={14} />;
-  };
-
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -56,9 +75,9 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-4 gap-4">
-        <Stat title="Revenue" value={`$${analyticsData.revenue.today.toLocaleString()}`} trend="up" trendValue={`${((analyticsData.revenue.today - analyticsData.revenue.yesterday) / analyticsData.revenue.yesterday * 100).toFixed(1)}%`} icon={<Icons.DollarSign size={22} />} />
-        <Stat title="Orders" value={String(analyticsData.orders.today)} trend="up" trendValue={`${analyticsData.orders.today - analyticsData.orders.yesterday} vs yesterday`} icon={<Icons.Receipt size={22} />} />
-        <Stat title="Customers" value={String(analyticsData.customers.today)} trend="up" trendValue={`${analyticsData.customers.new} new`} icon={<Icons.Users size={22} />} />
+        <Stat title="Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={<Icons.DollarSign size={22} />} />
+        <Stat title="Orders" value={String(orders.length)} icon={<Icons.Receipt size={22} />} />
+        <Stat title="Customers" value={String(uniqueCustomers)} icon={<Icons.Users size={22} />} />
         <Stat title="Active Tables" value={`${tables.filter(t => t.status === 'occupied').length}/${tables.length}`} trend="up" trendValue={`${tables.filter(t => t.status === 'available').length} free`} icon={<Icons.Monitor size={22} />} />
       </div>
 
@@ -74,64 +93,43 @@ export default function Dashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle subtitle="Real-time updates">Activity</CardTitle>
+            <CardTitle subtitle="Staff activity">Waiter Performance</CardTitle>
           </CardHeader>
           <CardBody>
-            <div className="flex flex-col gap-3">
-              {recentNotifications.map(n => (
-                <div key={n.id} className="flex items-start gap-3 glass-hover rounded-lg p-3 cursor-pointer">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-high text-primary shrink-0">
-                    {notifIcon(n.type)}
+            {waiterStats.length === 0 ? (
+              <p className="text-sm text-muted">No waiter activity yet. Add waiters in the Staff page and they'll appear here once they claim orders.</p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {waiterStats.map((w) => (
+                  <div key={w.id} className="flex items-center gap-4 glass rounded-lg p-4">
+                    <div className="flex items-center justify-center w-9 h-9 rounded-full bg-surface-container-high text-primary text-sm font-medium shrink-0">
+                      {w.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-on-surface truncate">{w.name}</p>
+                      <p className="text-xs text-muted font-mono">{w.email}</p>
+                    </div>
+                    <div className="flex items-center gap-6">
+                      <div className="text-center">
+                        <p className="text-lg font-semibold text-on-surface">{w.claimed}</p>
+                        <p className="text-xs text-muted font-mono">claimed</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-semibold text-success">{w.fulfilled}</p>
+                        <p className="text-xs text-muted font-mono">fulfilled</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-lg font-semibold text-primary">${w.revenue.toLocaleString()}</p>
+                        <p className="text-xs text-muted font-mono">revenue</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-0.5">
-                    <p className="text-sm text-on-surface">{n.message}</p>
-                    <p className="text-xs text-muted font-mono">{n.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </CardBody>
         </Card>
       </div>
-
-      <Card>
-        <CardHeader>
-          <CardTitle subtitle="Orders claimed and fulfilled by each waiter">Waiter Performance</CardTitle>
-        </CardHeader>
-        <CardBody>
-          {waiterStats.length === 0 ? (
-            <p className="text-sm text-muted">No waiter activity yet. Add waiters in the Staff page and they'll appear here once they claim orders.</p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {waiterStats.map((w, i) => (
-                <div key={w.id} className="flex items-center gap-4 glass rounded-lg p-4">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-full bg-surface-container-high text-primary text-sm font-medium shrink-0">
-                    {w.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-on-surface truncate">{w.name}</p>
-                    <p className="text-xs text-muted font-mono">{w.email}</p>
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-center">
-                      <p className="text-lg font-semibold text-on-surface">{w.claimed}</p>
-                      <p className="text-xs text-muted font-mono">claimed</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg font-semibold text-success">{w.fulfilled}</p>
-                      <p className="text-xs text-muted font-mono">fulfilled</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-lg font-semibold text-primary">${w.revenue.toLocaleString()}</p>
-                      <p className="text-xs text-muted font-mono">revenue</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardBody>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -139,14 +137,13 @@ export default function Dashboard() {
         </CardHeader>
         <CardBody>
           <div className="grid grid-4 gap-4">
-            {analyticsData.popularItems.slice(0, 4).map((item, i) => (
+            {menu.slice(0, 4).map((item, i) => (
               <div key={i} className="glass glass-hover rounded-lg p-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-muted">#{i + 1}</span>
-                  <Badge variant="primary" size="sm">{item.orders} orders</Badge>
                 </div>
                 <p className="text-sm font-medium text-on-surface truncate">{item.name}</p>
-                <p className="text-xs text-primary font-mono">${item.revenue.toLocaleString()}</p>
+                <p className="text-xs text-primary font-mono">${item.price?.toLocaleString()}</p>
               </div>
             ))}
           </div>
