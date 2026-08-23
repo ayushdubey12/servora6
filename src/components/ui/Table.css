@@ -1,31 +1,28 @@
-/* Plush Clay Table */
+/* Minimal Classic Table */
 
 .table-container {
   width: 100%;
   overflow-x: auto;
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--outline-variant);
   background: #ffffff;
-  box-shadow:
-    0 4px 24px rgba(0, 0, 0, 0.05),
-    inset 0 1px 2px rgba(255, 255, 255, 0.4),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.03);
 }
 .table { width: 100%; border-collapse: collapse; text-align: left; }
 .table th {
-  padding: var(--space-4) var(--space-6);
+  padding: 12px 20px;
   font-family: var(--font-sans);
-  font-size: var(--label-sm-fontSize);
-  font-weight: var(--font-bold);
+  font-size: 12px;
+  font-weight: 600;
   color: var(--on-surface-variant);
-  letter-spacing: var(--label-sm-letterSpacing);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   background: var(--surface-container-low);
   border-bottom: 1px solid var(--outline-variant);
 }
 .table td {
-  padding: var(--space-4) var(--space-6);
-  font-size: var(--body-md-fontSize);
-  font-weight: var(--font-medium);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--on-surface);
   border-bottom: 1px solid var(--outline-variant);
   vertical-align: middle;
@@ -33,6 +30,11 @@
 .table tbody tr:last-child td { border-bottom: none; }
 .table-row-clickable { cursor: pointer; transition: all var(--transition-fast); }
 .table-row-clickable:hover { background: var(--surface-container-low); }
-.table-empty { text-align: center; padding: var(--space-12) !important; color: var(--on-surface-variant) !important; }
+.table-empty {
+  text-align: center;
+  padding: 48px 20px !important;
+  color: var(--on-surface-variant) !important;
+  font-size: 14px;
+}
 .table-row-clickable.table-row-danger:hover { background: var(--error-container); }
 .table-row-clickable.table-row-success:hover { background: var(--success-container); }

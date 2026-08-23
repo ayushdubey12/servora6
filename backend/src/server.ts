@@ -296,7 +296,7 @@ app.post('/api/auth/login', asyncHandler(async (req, res) => {
   return res.json({
     success: true,
     data: {
-      user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, restaurantId: user.restaurantId },
       restaurant: restaurant ? { id: restaurant.id, name: restaurant.name, slug: restaurant.slug } : null,
       token: 'dev-token', refreshToken: 'dev-refresh-token',
     },
@@ -830,6 +830,239 @@ app.post('/api/payments/create', asyncHandler(async (req, res) => {
 app.get('/api/payments', asyncHandler(async (_req, res) => {
   const payments = await prisma.payment.findMany({ orderBy: { createdAt: 'desc' } });
   res.json({ success: true, data: payments });
+}));
+
+// ════════════════════════════════════════════════════════════════
+//  AUTH: Profile, Staff management, Dashboard stats, Customers
+// ════════════════════════════════════════════════════════════════
+
+app.get('/api/auth/profile', asyncHandler(async (req, res) => {
+  const tokenUser = req.headers.authorization?.replace('Bearer ', '');
+  const users = await prisma.user.findMany();
+  if (users.length === 0) return res.status(404).json({ success: false, message: 'No user found' });
+  const user = users[0];
+  const restaurant = user.restaurantId ? await prisma.restaurant.findUnique({ where: { id: user.restaurantId } }) : null;
+  return res.json({ success: true, data: { user: { id: user.id, name: user.name, email: user.email, role: user.role, restaurantId: user.restaurantId }, restaurant } });
+}));
+
+app.put('/api/auth/profile', asyncHandler(async (req, res) => {
+  const users = await prisma.user.findMany();
+  if (users.length === 0) return res.status(404).json({ success: false, message: 'No user found' });
+  const user = users[0];
+  const updated = await prisma.user.update({ where: { id: user.id }, data: { name: req.body.name || user.name, email: req.body.email || user.email } });
+  return res.json({ success: true, data: { id: updated.id, name: updated.name, email: updated.email, role: updated.role } });
+}));
+
+app.post('/api/auth/register-staff', asyncHandler(async (req, res) => {
+  const schema = z.object({ name: z.string().min(2), email: z.string().email(), password: z.string().min(6), role: z.enum(['waiter', 'chef']).default('waiter') });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success: false, message: 'Validation failed', errors: parsed.error.flatten() });
+  const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } });
+  if (existing) return res.status(409).json({ success: false, message: 'A user with this email already exists' });
+  const restaurant = await ensureRestaurant();
+  const pw = await bcrypt.hash(parsed.data.password, 10);
+  const waiter = await prisma.user.create({
+    data: { name: parsed.data.name, email: parsed.data.email, password: pw, role: parsed.data.role, restaurantId: restaurant.id },
+    select: { id: true, name: true, email: true, role: true, createdAt: true },
+  });
+  io.emit('waiter:new', waiter);
+  return res.status(201).json({ success: true, data: waiter });
+}));
+
+app.get('/api/auth/staff', asyncHandler(async (_req, res) => {
+  const staff = await prisma.user.findMany({ where: { role: { in: ['waiter', 'chef'] } }, select: { id: true, name: true, email: true, role: true, createdAt: true }, orderBy: { createdAt: 'asc' } });
+  res.json({ success: true, data: staff });
+}));
+
+app.delete('/api/auth/staff/:id', asyncHandler(async (req, res) => {
+  const user = await prisma.user.findUnique({ where: { id: paramStr(req.params.id) } });
+  if (!user) return res.status(404).json({ success: false, message: 'Staff member not found' });
+  if (user.role === 'owner') return res.status(400).json({ success: false, message: 'Cannot remove the owner' });
+  await prisma.order.updateMany({ where: { claimedById: paramStr(req.params.id) }, data: { claimedById: null } });
+  await prisma.user.delete({ where: { id: paramStr(req.params.id) } });
+  return res.json({ success: true, data: { id: paramStr(req.params.id) } });
+}));
+
+app.get('/api/auth/dashboard-stats', asyncHandler(async (_req, res) => {
+  const restaurant = await getRestaurant();
+  if (!restaurant) return res.json({ success: true, data: { totalOrders: 0, totalRevenue: 0, totalCustomers: 0, totalMenuItems: 0, activeTables: 0, pendingOrders: 0, todayOrders: 0, todayRevenue: 0 } });
+  const totalOrders = await prisma.order.count({ where: { restaurantId: restaurant.id } });
+  const totalRevenue = await prisma.order.aggregate({ where: { restaurantId: restaurant.id, paymentStatus: 'PAID' }, _sum: { total: true } });
+  const totalCustomers = await prisma.customer.count({ where: { restaurantId: restaurant.id } });
+  const totalMenuItems = await prisma.menuItem.count({ where: { restaurantId: restaurant.id } });
+  const activeTables = await prisma.table.count({ where: { restaurantId: restaurant.id, status: 'available' } });
+  const pendingOrders = await prisma.order.count({ where: { restaurantId: restaurant.id, status: 'PENDING' } });
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const todayOrders = await prisma.order.count({ where: { restaurantId: restaurant.id, createdAt: { gte: today } } });
+  const todayRevenue = await prisma.order.aggregate({ where: { restaurantId: restaurant.id, paymentStatus: 'PAID', createdAt: { gte: today } }, _sum: { total: true } });
+  return res.json({ success: true, data: { totalOrders, totalRevenue: totalRevenue._sum.total || 0, totalCustomers, totalMenuItems, activeTables, pendingOrders, todayOrders, todayRevenue: todayRevenue._sum.total || 0 } });
+}));
+
+app.get('/api/auth/customers', asyncHandler(async (_req, res) => {
+  const customers = await prisma.customer.findMany({ orderBy: { createdAt: 'desc' } });
+  res.json({ success: true, data: customers });
+}));
+
+app.post('/api/auth/register-customer', asyncHandler(async (req, res) => {
+  const schema = z.object({ name: z.string().min(2), email: z.string().email(), phone: z.string().optional(), password: z.string().min(6) });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success: false, message: 'Validation failed', errors: parsed.error.flatten() });
+  const existing = await prisma.customer.findUnique({ where: { email: parsed.data.email } });
+  if (existing) return res.status(409).json({ success: false, message: 'Account already exists' });
+  const restaurant = await ensureRestaurant();
+  const pw = await bcrypt.hash(parsed.data.password, 10);
+  const customer = await prisma.customer.create({
+    data: { name: parsed.data.name, email: parsed.data.email, phone: parsed.data.phone, password: pw, restaurantId: restaurant.id },
+  });
+  return res.status(201).json({ success: true, data: { id: customer.id, name: customer.name, email: customer.email, points: customer.points, token: 'dev-customer-token' } });
+}));
+
+// ════════════════════════════════════════════════════════════════
+//  RESTAURANTS (plural API for frontend compatibility)
+// ════════════════════════════════════════════════════════════════
+
+app.get('/api/restaurants', asyncHandler(async (_req, res) => {
+  const restaurants = await prisma.restaurant.findMany();
+  res.json({ success: true, data: restaurants });
+}));
+
+app.get('/api/restaurants/slug/:slug', asyncHandler(async (req, res) => {
+  const restaurant = await prisma.restaurant.findUnique({ where: { slug: paramStr(req.params.slug) } });
+  if (!restaurant) return res.status(404).json({ success: false, message: 'Restaurant not found' });
+  res.json({ success: true, data: restaurant });
+}));
+
+app.get('/api/restaurants/:id', asyncHandler(async (req, res) => {
+  const restaurant = await prisma.restaurant.findUnique({ where: { id: paramStr(req.params.id) } });
+  if (!restaurant) return res.status(404).json({ success: false, message: 'Restaurant not found' });
+  res.json({ success: true, data: restaurant });
+}));
+
+app.put('/api/restaurants/:id', asyncHandler(async (req, res) => {
+  const restaurant = await prisma.restaurant.findUnique({ where: { id: paramStr(req.params.id) } });
+  if (!restaurant) return res.status(404).json({ success: false, message: 'Restaurant not found' });
+  const updated = await prisma.restaurant.update({ where: { id: restaurant.id }, data: { name: req.body.name || restaurant.name, description: req.body.description || restaurant.description, phone: req.body.phone || restaurant.phone, email: req.body.email || restaurant.email, address: req.body.address || restaurant.address, settings: req.body.settings ? JSON.stringify(req.body.settings) : restaurant.settings } });
+  res.json({ success: true, data: updated });
+}));
+
+// ════════════════════════════════════════════════════════════════
+//  COUNT ENDPOINTS (for onboarding)
+// ════════════════════════════════════════════════════════════════
+
+app.get('/api/categories/count', asyncHandler(async (_req, res) => {
+  const count = await prisma.category.count();
+  res.json({ success: true, data: count });
+}));
+
+app.get('/api/menu-items/count', asyncHandler(async (_req, res) => {
+  const count = await prisma.menuItem.count();
+  res.json({ success: true, data: count });
+}));
+
+app.get('/api/tables/count', asyncHandler(async (_req, res) => {
+  const count = await prisma.table.count();
+  res.json({ success: true, data: count });
+}));
+
+app.get('/api/menu-items/:id', asyncHandler(async (req, res) => {
+  const item = await prisma.menuItem.findUnique({ where: { id: paramStr(req.params.id) } });
+  if (!item) return res.status(404).json({ success: false, message: 'Menu item not found' });
+  res.json({ success: true, data: item });
+}));
+
+// ════════════════════════════════════════════════════════════════
+//  TABLES BULK
+// ════════════════════════════════════════════════════════════════
+
+app.post('/api/tables/bulk', asyncHandler(async (req, res) => {
+  const restaurant = await ensureRestaurant();
+  const tables = Array.isArray(req.body.tables) ? req.body.tables : [];
+  const existingTables = await prisma.table.findMany({ where: { restaurantId: restaurant.id }, select: { number: true } });
+  const existingNumbers = new Set(existingTables.map(t => t.number));
+  const tablesToCreate = tables.filter((t: any) => !existingNumbers.has(Number(t.number)));
+  const created = tablesToCreate.length > 0
+    ? await Promise.all(tablesToCreate.map((t: any) => prisma.table.create({
+        data: { restaurantId: restaurant.id, number: Number(t.number), seats: Number(t.seats), status: t.status || 'available' },
+      })))
+    : [];
+  return res.json({ success: true, data: created });
+}));
+
+// ════════════════════════════════════════════════════════════════
+//  RESERVATIONS: full CRUD
+// ════════════════════════════════════════════════════════════════
+
+app.put('/api/reservations/:id', asyncHandler(async (req, res) => {
+  const reservation = await prisma.reservation.findUnique({ where: { id: paramStr(req.params.id) } });
+  if (!reservation) return res.status(404).json({ success: false, message: 'Reservation not found' });
+  const updated = await prisma.reservation.update({ where: { id: reservation.id }, data: { status: req.body.status || reservation.status, customerName: req.body.customerName || reservation.customerName, partySize: req.body.partySize || reservation.partySize, date: req.body.date || reservation.date, time: req.body.time || reservation.time, notes: req.body.notes ?? reservation.notes } });
+  return res.json({ success: true, data: updated });
+}));
+
+app.delete('/api/reservations/:id', asyncHandler(async (req, res) => {
+  const reservation = await prisma.reservation.findUnique({ where: { id: paramStr(req.params.id) } });
+  if (!reservation) return res.status(404).json({ success: false, message: 'Reservation not found' });
+  await prisma.reservation.delete({ where: { id: reservation.id } });
+  return res.json({ success: true, data: { id: reservation.id } });
+}));
+
+// ════════════════════════════════════════════════════════════════
+//  PUBLIC MENU (no auth required)
+// ════════════════════════════════════════════════════════════════
+
+app.get('/api/public/menu/:slug', asyncHandler(async (req, res) => {
+  const restaurant = await prisma.restaurant.findUnique({ where: { slug: paramStr(req.params.slug) } });
+  if (!restaurant) return res.status(404).json({ success: false, message: 'Restaurant not found' });
+  const categories = await prisma.category.findMany({ where: { restaurantId: restaurant.id }, orderBy: { order: 'asc' } });
+  const menuItems = await prisma.menuItem.findMany({ where: { restaurantId: restaurant.id, isAvailable: true }, orderBy: { createdAt: 'asc' } });
+  const tables = await prisma.table.findMany({ where: { restaurantId: restaurant.id }, orderBy: { number: 'asc' } });
+  return res.json({ success: true, data: { restaurant: { id: restaurant.id, name: restaurant.name, slug: restaurant.slug, description: restaurant.description, address: restaurant.address, phone: restaurant.phone, openingHours: restaurant.openingHours }, categories, menuItems, tables } });
+}));
+
+app.get('/api/public/menu/:slug/item/:itemId', asyncHandler(async (req, res) => {
+  const restaurant = await prisma.restaurant.findUnique({ where: { slug: paramStr(req.params.slug) } });
+  if (!restaurant) return res.status(404).json({ success: false, message: 'Restaurant not found' });
+  const item = await prisma.menuItem.findUnique({ where: { id: paramStr(req.params.itemId) } });
+  if (!item || item.restaurantId !== restaurant.id) return res.status(404).json({ success: false, message: 'Item not found' });
+  const category = await prisma.category.findUnique({ where: { id: item.categoryId } });
+  return res.json({ success: true, data: { ...item, category } });
+}));
+
+// ════════════════════════════════════════════════════════════════
+//  RAZORPAY (stubs — implement with real keys)
+// ════════════════════════════════════════════════════════════════
+
+app.post('/api/payments/create-order', asyncHandler(async (req, res) => {
+  const { orderId } = req.body;
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+  const razorpayOrderId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+  return res.json({ success: true, data: { razorpayOrderId, amount: Math.round(order.total * 100), currency: 'INR' } });
+}));
+
+app.post('/api/payments/verify', asyncHandler(async (req, res) => {
+  const { orderId, razorpay_payment_id } = req.body;
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+  await prisma.payment.create({ data: { orderId, amount: order.total, method: 'online', status: 'PAID' } });
+  await prisma.order.update({ where: { id: orderId }, data: { paymentStatus: 'PAID', status: 'COMPLETED' } });
+  return res.json({ success: true, data: { verified: true } });
+}));
+
+// ════════════════════════════════════════════════════════════════
+//  FEEDBACK / REVIEWS
+// ════════════════════════════════════════════════════════════════
+
+app.get('/api/feedback', asyncHandler(async (_req, res) => {
+  res.json({ success: true, data: [] });
+}));
+
+app.post('/api/feedback', asyncHandler(async (req, res) => {
+  return res.status(201).json({ success: true, data: { id: 'feedback-' + Date.now(), ...req.body, createdAt: new Date().toISOString() } });
+}));
+
+app.put('/api/feedback/:id/reply', asyncHandler(async (req, res) => {
+  return res.json({ success: true, data: { id: paramStr(req.params.id), reply: req.body.reply } });
 }));
 
 // ════════════════════════════════════════════════════════════════

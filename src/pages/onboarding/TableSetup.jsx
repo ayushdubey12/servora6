@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { createBulkTables } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input from '../../components/ui/Input';
@@ -43,17 +43,14 @@ export default function TableSetup() {
         const tableCount = Number(form.tableCount);
         const seatsPerTable = Number(form.seatsPerTable);
 
-        // Delete existing tables for this restaurant, then insert new ones
-        await supabase.from('tables').delete().eq('restaurant_id', user.restaurantId);
-
         const tables = Array.from({ length: tableCount }, (_, index) => ({
-          restaurant_id: user.restaurantId,
           number: index + 1,
           seats: seatsPerTable,
           status: 'available',
+          section: 'Main Hall',
         }));
 
-        await supabase.from('tables').insert(tables);
+        await createBulkTables(user.restaurantId, tables);
       }
       navigate('/onboarding/menu');
     } catch (err) {

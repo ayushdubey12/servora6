@@ -7,7 +7,7 @@ import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import { Icons } from '../../assets/icons';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../lib/supabase';
+import { registerStaff, getStaff, deleteStaff } from '../../lib/api';
 
 export default function Staff() {
   const { user } = useAuth();
@@ -23,11 +23,7 @@ export default function Staff() {
   const loadStaff = useCallback(async () => {
     setLoading(true);
     try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('role', ['waiter', 'chef'])
-        .order('created_at', { ascending: true });
+      const data = await getStaff();
       if (data) setStaffList(data);
     } finally {
       setLoading(false);
@@ -59,42 +55,19 @@ export default function Staff() {
     setSaving(true);
     setError('');
     try {
-      const password = form.password || 'password123';
-
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const result = await registerStaff({
         email: form.email,
-        password,
-        options: {
-          data: {
-            full_name: form.name,
-            role: form.role,
-          },
-        },
+        password: form.password || 'password123',
+        name: form.name,
+        role: form.role,
       });
 
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
-
-      // Update profile with restaurant_id and correct role
-      if (authData.user) {
-        await supabase
-          .from('profiles')
-          .update({
-            name: form.name,
-            role: form.role,
-            restaurant_id: user?.restaurantId || null,
-          })
-          .eq('id', authData.user.id);
-      }
-
       setStaffList(prev => [...prev, {
-        id: authData.user?.id || Date.now().toString(),
-        name: form.name,
-        email: form.email,
-        role: form.role,
-        restaurant_id: user?.restaurantId,
+        id: result.id,
+        name: result.name,
+        email: result.email,
+        role: result.role,
+        restaurantId: result.restaurantId,
       }]);
       setShowModal(false);
     } catch (err) {
@@ -105,7 +78,12 @@ export default function Staff() {
   };
 
   const handleDelete = async (id) => {
-    setStaffList(list => list.filter(s => s.id !== id));
+    try {
+      await deleteStaff(id);
+      setStaffList(list => list.filter(s => s.id !== id));
+    } catch (err) {
+      console.error('Failed to delete staff:', err);
+    }
   };
 
   const roleIcon = (role) => {
@@ -127,7 +105,7 @@ export default function Staff() {
       </div>
     )},
     { header: 'Role', field: 'role', align: 'left', render: (row) => <Badge variant={roleVariant(row.role)} size="sm" icon={roleIcon(row.role)}>{row.role}</Badge> },
-    { header: 'Joined', field: 'created_at', align: 'left', render: (row) => <span className="text-sm text-muted">{row.created_at ? new Date(row.created_at).toLocaleDateString() : '—'}</span> },
+    { header: 'Joined', field: 'createdAt', align: 'left', render: (row) => <span className="text-sm text-muted">{row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '—'}</span> },
     { header: 'Actions', field: 'id', align: 'center', render: (row) => (
       <div className="flex items-center justify-center gap-2">
         <button onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }} className="p-1.5 rounded-md glass-hover text-error" title="Remove"><Icons.Trash size={16} /></button>

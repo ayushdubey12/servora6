@@ -37,7 +37,7 @@ export default function Login() {
             <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.01em' }}>Servora</span>
           </Link>
         </div>
-        <h2 className="text-center" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--on-surface)', lineHeight: '36px', marginBottom: '8px' }}>
+        <h2 className="text-center" style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 600, color: 'var(--on-surface)', lineHeight: '36px', marginBottom: '8px' }}>
           Welcome back
         </h2>
         <p className="text-center" style={{ color: 'var(--on-surface-variant)', fontSize: '16px', fontWeight: 500 }}>
@@ -49,7 +49,7 @@ export default function Login() {
       </div>
 
       <div className="w-full" style={{ maxWidth: '400px', marginTop: '32px' }}>
-        <div style={{ background: '#ffffff', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-2xl)', padding: '32px 24px', boxShadow: '0 20px 60px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: '#ffffff', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', padding: '32px 24px', boxShadow: '0px 12px 32px rgba(0,0,0,0.04)' }}>
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <Input
               label="Email address"
@@ -111,17 +111,8 @@ export default function Login() {
                 <div className="w-full" style={{ borderTop: '1px solid var(--outline-variant)' }} />
               </div>
               <div className="relative flex justify-center">
-                <span className="px-2" style={{ background: '#ffffff', color: 'var(--on-surface-variant)', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>Or continue with</span>
+                <span className="px-2" style={{ background: '#ffffff', color: 'var(--on-surface-variant)', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>Email & password authentication</span>
               </div>
-            </div>
-
-            <div className="mt-6 grid grid-2 gap-3">
-              <Button variant="outline" icon={<Icons.Globe size={18} />}>
-                Google
-              </Button>
-              <Button variant="outline" icon={<Icons.Smartphone size={18} />}>
-                Apple
-              </Button>
             </div>
           </div>
         </div>

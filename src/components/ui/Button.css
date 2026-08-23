@@ -1,4 +1,4 @@
-/* Plush Clay Buttons — pill-shaped with 3D clay shadow stack */
+/* Minimal Classic Buttons — clean, spacious, rounded */
 
 .btn {
   display: inline-flex;
@@ -6,9 +6,9 @@
   justify-content: center;
   gap: var(--space-2);
   font-family: var(--font-sans);
-  font-weight: var(--font-bold);
-  border-radius: var(--radius-full);
-  transition: all var(--transition-base);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  transition: all 0.15s ease;
   cursor: pointer;
   white-space: nowrap;
   border: none;
@@ -21,111 +21,86 @@
 .btn:disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 
 /* Sizes */
-.btn-sm { padding: 8px 18px; font-size: var(--label-md-fontSize); }
-.btn-md { padding: 10px 24px; font-size: var(--body-md-fontSize); }
-.btn-lg { padding: 14px 32px; font-size: var(--body-lg-fontSize); }
-.btn-xl { padding: 16px 36px; font-size: var(--text-lg); }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+.btn-md { padding: 10px 20px; font-size: 14px; }
+.btn-lg { padding: 14px 28px; font-size: 16px; }
+.btn-xl { padding: 16px 32px; font-size: 18px; }
 
-/* Primary — Indigo clay button */
+/* Primary — Warm terracotta */
 .btn-primary {
   background: var(--primary);
   color: var(--on-primary);
-  box-shadow:
-    0 4px 16px rgba(70, 72, 212, 0.3),
-    inset 0 2px 4px rgba(255, 255, 255, 0.3),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.12);
+  box-shadow: 0px 4px 12px rgba(163, 56, 24, 0.2);
 }
 .btn-primary:hover:not(:disabled) {
   background: var(--primary-container);
-  box-shadow:
-    0 8px 28px rgba(70, 72, 212, 0.4),
-    inset 0 3px 6px rgba(255, 255, 255, 0.4),
-    inset 0 -3px 6px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px) scale(1.01);
+  box-shadow: 0px 6px 20px rgba(163, 56, 24, 0.25);
+  transform: translateY(-1px);
 }
 .btn-primary:active:not(:disabled) {
-  transform: translateY(0) scale(0.98);
-  box-shadow:
-    0 2px 8px rgba(70, 72, 212, 0.2),
-    inset 0 1px 2px rgba(255, 255, 255, 0.2),
-    inset 0 -1px 2px rgba(0, 0, 0, 0.1);
+  transform: translateY(0);
+  box-shadow: 0px 2px 8px rgba(163, 56, 24, 0.15);
 }
 
-/* Secondary — Glass-like but light */
+/* Secondary */
 .btn-secondary {
   background: var(--surface-container);
   color: var(--on-surface);
-  box-shadow: var(--shadow-clay-sm);
+  border: 1px solid var(--outline-variant);
 }
 .btn-secondary:hover:not(:disabled) {
   background: var(--surface-container-high);
-  transform: translateY(-1px);
+  border-color: var(--outline);
 }
 
 /* Outline */
 .btn-outline {
   background: transparent;
   color: var(--primary);
-  border: 2px solid var(--primary);
-  box-shadow: none;
+  border: 1px solid var(--primary);
 }
 .btn-outline:hover:not(:disabled) {
   background: var(--primary);
   color: var(--on-primary);
-  box-shadow:
-    0 4px 16px rgba(70, 72, 212, 0.25),
-    inset 0 2px 4px rgba(255, 255, 255, 0.3),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Ghost */
 .btn-ghost {
   background: transparent;
   color: var(--on-surface-variant);
-  box-shadow: none;
 }
 .btn-ghost:hover:not(:disabled) {
   background: var(--surface-container);
   color: var(--on-surface);
 }
 
-/* Danger — Red clay */
+/* Danger */
 .btn-danger {
   background: var(--error);
   color: var(--on-error);
-  box-shadow:
-    0 4px 16px rgba(186, 26, 26, 0.3),
-    inset 0 2px 4px rgba(255, 255, 255, 0.25),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.15);
 }
 .btn-danger:hover:not(:disabled) {
   background: #d32f2f;
-  transform: translateY(-1px);
 }
 
-/* Success — Mint clay */
+/* Success */
 .btn-success {
   background: var(--tertiary);
   color: var(--on-tertiary);
-  box-shadow:
-    0 4px 16px rgba(0, 105, 73, 0.3),
-    inset 0 2px 4px rgba(255, 255, 255, 0.3),
-    inset 0 -2px 4px rgba(0, 0, 0, 0.12);
 }
 .btn-success:hover:not(:disabled) {
   background: var(--tertiary-container);
-  transform: translateY(-1px);
 }
 
 /* White */
 .btn-white {
   background: #ffffff;
   color: var(--on-surface);
-  box-shadow: var(--shadow-clay-sm);
+  border: 1px solid var(--outline-variant);
 }
 .btn-white:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-clay);
+  background: var(--surface-container-low);
+  border-color: var(--outline);
 }
 
 /* Full width */

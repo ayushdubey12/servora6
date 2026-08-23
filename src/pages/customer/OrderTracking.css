@@ -315,3 +315,97 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+
+/* ── Live Indicator ───────────────────── */
+.tracking-live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding: 8px 14px;
+  border-radius: var(--radius-full);
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  width: fit-content;
+}
+
+.tracking-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: livePulse 1.5s ease-in-out infinite;
+}
+
+.tracking-live-text {
+  font-size: 12px;
+  color: var(--success);
+  font-weight: 500;
+  font-family: var(--font-mono);
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* ── Pulse Wave Animation (map-style) ── */
+.timeline-marker {
+  position: relative;
+}
+
+.timeline-pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid;
+  opacity: 0;
+  animation: waveExpand 2.4s ease-out infinite;
+}
+
+.timeline-pulse-ring.ring-1 { animation-delay: 0s; }
+.timeline-pulse-ring.ring-2 { animation-delay: 0.8s; }
+.timeline-pulse-ring.ring-3 { animation-delay: 1.6s; }
+
+@keyframes waveExpand {
+  0% {
+    width: 28px;
+    height: 28px;
+    opacity: 0.6;
+  }
+  100% {
+    width: 72px;
+    height: 72px;
+    opacity: 0;
+  }
+}
+
+/* Pulse effect when a step completes */
+.timeline-marker.pulse-wave {
+  animation: markerPop 0.5s ease-out;
+}
+
+@keyframes markerPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* Continuous subtle pulse for current active step */
+.timeline-step.current .timeline-marker:not(.pulse-wave) {
+  animation: subtlePulse 2s ease-in-out infinite;
+}
+
+@keyframes subtlePulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--primary); }
+  50% { box-shadow: 0 0 0 6px rgba(163, 56, 24, 0.15); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

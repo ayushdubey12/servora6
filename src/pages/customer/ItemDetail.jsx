@@ -1,43 +1,76 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useRestaurant } from '../../context/RestaurantContext';
 import { useCart } from '../../context/CartContext';
 import { Icons } from '../../assets/icons';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import { getPublicMenuItem } from '../../lib/api';
 import './ItemDetail.css';
 
 export default function ItemDetail() {
-  const { itemId } = useParams();
+  const { restaurantSlug, itemId } = useParams();
   const navigate = useNavigate();
-  const { menu, getCategoryName } = useRestaurant();
   const { addItem } = useCart();
 
-  const item = useMemo(() => menu.find(i => i.id === itemId), [menu, itemId]);
+  const [item, setItem] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [quantity, setQuantity] = useState(1);
 
-  if (!item) {
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getPublicMenuItem(restaurantSlug, itemId);
+        if (cancelled) return;
+        setItem(data);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err.message || 'Item not found');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [restaurantSlug, itemId]);
+
+  if (loading) {
     return (
       <div className="item-detail-page">
         <div className="container">
-          <div className="item-detail-empty">
-            <p>Item not found</p>
-            <Button variant="primary" onClick={() => navigate('/menu/hotel-siraj')}>Back to Menu</Button>
+          <div className="menu-loading">
+            <div className="menu-loading-spinner" />
+            <p>Loading item...</p>
           </div>
         </div>
       </div>
     );
   }
 
-  const categoryName = getCategoryName(item.category);
+  if (error || !item) {
+    return (
+      <div className="item-detail-page">
+        <div className="container">
+          <div className="item-detail-empty">
+            <p>{error || 'Item not found'}</p>
+            <Button variant="primary" onClick={() => navigate(`/menu/${restaurantSlug}`)}>Back to Menu</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const itemTotal = item.price * quantity;
 
   return (
     <div className="item-detail-page">
       <div className="container">
-        <button className="back-button" onClick={() => navigate(-1)}>
+        <button className="back-button" onClick={() => navigate(`/menu/${restaurantSlug}`)}>
           <Icons.ArrowLeft size={20} />
-          <span>Back</span>
+          <span>Back to Menu</span>
         </button>
 
         <div className="item-detail-card">
@@ -51,21 +84,24 @@ export default function ItemDetail() {
           <div className="item-detail-body">
             <div className="item-detail-header">
               <div>
-                <div className="item-detail-category">{categoryName}</div>
                 <h1 className="item-detail-name">{item.name}</h1>
                 <p className="item-detail-desc">{item.description}</p>
               </div>
             </div>
 
             <div className="item-detail-meta">
-              <div className="meta-item">
-                <Icons.Clock size={16} />
-                <span>{item.prepTime} min prep</span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">Calories</span>
-                <span className="meta-value">{item.calories}</span>
-              </div>
+              {item.prepTime > 0 && (
+                <div className="meta-item">
+                  <Icons.Clock size={16} />
+                  <span>{item.prepTime} min prep</span>
+                </div>
+              )}
+              {item.calories > 0 && (
+                <div className="meta-item">
+                  <span className="meta-label">Calories</span>
+                  <span className="meta-value">{item.calories}</span>
+                </div>
+              )}
             </div>
 
             <div className="item-detail-purchase">

@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { registerStaff, getStaff } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input, { Select } from '../../components/ui/Input';
@@ -23,11 +23,7 @@ export default function WaiterSetup() {
 
   const loadStaff = useCallback(async () => {
     try {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .in('role', ['waiter', 'chef'])
-        .order('created_at', { ascending: true });
+      const data = await getStaff();
       if (data) setStaff(data);
     } catch { /* ignore */ }
   }, []);
@@ -40,43 +36,19 @@ export default function WaiterSetup() {
     if (!form.name || !form.email) { setError('Name and email are required'); return; }
     setSaving(true);
     try {
-      const password = form.password || 'password123';
-
-      // Create auth user via Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signUp({
+      const result = await registerStaff({
         email: form.email,
-        password,
-        options: {
-          data: {
-            full_name: form.name,
-            role: form.role,
-          },
-        },
+        password: form.password || 'password123',
+        name: form.name,
+        role: form.role,
       });
 
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
-
-      // The trigger auto-creates a profile. Update it with restaurant_id.
-      if (authData.user) {
-        await supabase
-          .from('profiles')
-          .update({
-            name: form.name,
-            role: form.role,
-            restaurant_id: user?.restaurantId || null,
-          })
-          .eq('id', authData.user.id);
-      }
-
       setStaff(prev => [...prev, {
-        id: authData.user?.id || Date.now().toString(),
-        name: form.name,
-        email: form.email,
-        role: form.role,
-        restaurant_id: user?.restaurantId,
+        id: result.id,
+        name: result.name,
+        email: result.email,
+        role: result.role,
+        restaurantId: result.restaurantId,
       }]);
       setForm({ name: '', email: '', role: 'waiter', password: '' });
     } catch (err) {
@@ -88,8 +60,6 @@ export default function WaiterSetup() {
 
   const removeStaff = async (id) => {
     setStaff(prev => prev.filter(s => s.id !== id));
-    // Note: Cannot delete auth users from client-side in Supabase.
-    // The profile will be orphaned but harmless.
   };
 
   const update = (key, value) => setForm(prev => ({ ...prev, [key]: value }));

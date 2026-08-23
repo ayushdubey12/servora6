@@ -45,13 +45,13 @@ export default function Pricing() {
                 </div>
 
                 <div className="pricing-price">
-                  <span className="currency">$</span>
+                  <span className="currency">₹</span>
                   <span className="amount">{price}</span>
                   <span className="period">/mo</span>
                 </div>
 
                 <p className="body-sm mb-8" style={{ color: 'var(--on-surface-variant)' }}>
-                  {billingCycle === 'yearly' ? `Billed annually (₹{price * 12}/year)` : 'Billed monthly'}
+                  {billingCycle === 'yearly' ? `Billed annually (₹${price * 12}/year)` : 'Billed monthly'}
                 </p>
 
                 <Link to="/register" className="w-full">

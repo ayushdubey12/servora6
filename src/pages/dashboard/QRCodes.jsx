@@ -100,21 +100,22 @@ async function createLabeledQrBlob(qrUrl, label, size = 300, brandColor = '#6366
 }
 
 export default function QRCodes() {
-  const { restaurant } = useRestaurant();
+  const { restaurant, tables, loading } = useRestaurant();
   const [qrSize, setQrSize] = useState(300);
   const [showPreview, setShowPreview] = useState(false);
   const [bulkDownloading, setBulkDownloading] = useState(false);
   const [logoImage, setLogoImage] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
   const fileInputRef = useRef(null);
-
   const slug = restaurant?.slug || 'hotel-siraj';
   const restaurantName = restaurant?.name || 'Hotel Siraj';
-  const menuUrl = `${window.location.origin}/menu/${slug}`;
+  // Use VITE_PUBLIC_URL (LAN IP) so QR codes work on phone, fall back to current origin
+  const baseUrl = import.meta.env.VITE_PUBLIC_URL || window.location.origin;
+  const menuUrl = `${baseUrl}/menu/${slug}`;
   const qrUrl = `${QR_API}?size=${qrSize}x${qrSize}&data=${encodeURIComponent(menuUrl)}`;
 
   const tableQrUrl = (tableNum) => {
-    const url = `${window.location.origin}/menu/${slug}?table=${tableNum}`;
+    const url = `${baseUrl}/menu/${slug}?table=${tableNum}`;
     return `${QR_API}?size=300x300&data=${encodeURIComponent(url)}`;
   };
 
@@ -176,10 +177,10 @@ export default function QRCodes() {
       tableFolder.file('menu-qr.png', menuBlob);
 
       // Table QRs
-      const tableNums = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-      for (const num of tableNums) {
+      for (const table of tables) {
+        const num = table.number;
         const blob = await createLabeledQrBlob(
-          `${QR_API}?size=500x500&data=${encodeURIComponent(`${window.location.origin}/menu/${slug}?table=${num}`)}`,
+          `${QR_API}?size=500x500&data=${encodeURIComponent(`${baseUrl}/menu/${slug}?table=${num}`)}`,
           `Table ${num}`,
           500,
           '#6366f1',
@@ -322,27 +323,39 @@ export default function QRCodes() {
           <CardTitle subtitle="Print QR codes for each table — each includes the table number label">Table QR Codes</CardTitle>
         </CardHeader>
         <CardBody>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <p className="text-muted text-sm">Loading tables...</p>
+            </div>
+          ) : tables.length === 0 ? (
+            <div className="flex flex-col items-center gap-3 py-12">
+              <Icons.Table size={32} style={{ color: 'var(--on-surface-variant)', opacity: 0.4 }} />
+              <p className="text-muted text-sm">No tables found. Add tables from the Tables page first.</p>
+            </div>
+          ) : (
           <div className="grid grid-3 gap-4">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(tableNum => (
-              <div key={tableNum} className="rounded-lg p-4 flex flex-col items-center gap-3" style={{ background: '#ffffff', border: '1px solid var(--outline-variant)' }}>
+            {tables.map(table => (
+              <div key={table.id} className="rounded-lg p-4 flex flex-col items-center gap-3" style={{ background: '#ffffff', border: '1px solid var(--outline-variant)' }}>
                 <img
-                  src={tableQrUrl(tableNum)}
-                  alt={`Table ${tableNum} QR`}
+                  src={tableQrUrl(table.number)}
+                  alt={`Table ${table.number} QR`}
                   style={{ width: 120, height: 120 }}
                   className="rounded"
                 />
-                <p className="text-sm font-semibold">Table {tableNum}</p>
+                <p className="text-sm font-semibold">Table {table.number}</p>
+                <p className="text-xs text-muted">{table.seats} seats · {table.section || 'Main Hall'}</p>
                 <Button
                   variant="secondary"
                   size="sm"
                   icon={<Icons.Download size={14} />}
-                  onClick={() => downloadLabeledQr(tableQrUrl(tableNum), `qr-table-${tableNum}.png`, `Table ${tableNum}`)}
+                  onClick={() => downloadLabeledQr(tableQrUrl(table.number), `qr-table-${table.number}.png`, `Table ${table.number}`)}
                 >
                   Download
                 </Button>
               </div>
             ))}
           </div>
+          )}
         </CardBody>
       </Card>
 

@@ -89,7 +89,7 @@ export default function StaffDashboard() {
                     {(order.items?.length || 0) > 2 && <span className="staff-more">+{order.items.length - 2} more</span>}
                   </div>
                   <div className="staff-order-card-footer">
-                    <span className="staff-order-total">${order.total?.toFixed(2)}</span>
+                    <span className="staff-order-total">₹{order.total?.toFixed(0)}</span>
                     <Button size="sm" variant="primary" loading={claiming[order.id]} onClick={() => claim(order.id)}>
                       Accept
                     </Button>
@@ -115,7 +115,7 @@ export default function StaffDashboard() {
                     <Badge variant={order.status === 'READY' ? 'secondary' : 'tertiary'}>{order.status}</Badge>
                   </div>
                   <span className="staff-order-table">Table {order.tableNumber}</span>
-                  <span className="staff-order-total">${order.total?.toFixed(2)}</span>
+                  <span className="staff-order-total">₹{order.total?.toFixed(0)}</span>
                 </div>
               ))}
             </div>

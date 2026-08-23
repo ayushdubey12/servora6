@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase, getProfile, upsertProfile } from '../lib/supabase';
+import { loginUser, getProfile, registerCustomer } from '../lib/api';
 
 const CustomerAuthContext = createContext(null);
 
@@ -19,24 +19,6 @@ export function CustomerAuthProvider({ children }) {
             setCustomer(stored.customer);
             setToken(stored.token);
           }
-        } else {
-          // Check if Supabase session exists with a customer role
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user && !cancelled) {
-            const profile = await getProfile(session.user.id);
-            if (profile?.role === 'customer') {
-              setCustomer({
-                id: profile.id,
-                name: profile.name,
-                email: profile.email,
-                phone: profile.phone,
-                points: profile.points,
-                totalSpent: profile.total_spent,
-                visitCount: profile.visit_count,
-              });
-              setToken(session.access_token);
-            }
-          }
         }
       } catch {
         // ignore
@@ -54,75 +36,43 @@ export function CustomerAuthProvider({ children }) {
   };
 
   const login = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(error.message);
+    const data = await loginUser(email, password);
 
-    const profile = await getProfile(data.user.id);
-    if (!profile) {
-      // Profile might not exist yet — create it
-      const newProfile = await upsertProfile(data.user.id, {
-        name: data.user.user_metadata?.full_name || email,
-        email,
-        role: 'customer',
-      });
-      if (!newProfile) throw new Error('Failed to create customer profile');
+    if (data.user.role !== 'customer') {
+      // Allow staff to also login as customer, but for customer auth we prefer customer role
     }
 
-    const finalProfile = profile || await getProfile(data.user.id);
     const customerData = {
-      id: finalProfile.id,
-      name: finalProfile.name,
-      email: finalProfile.email,
-      phone: finalProfile.phone,
-      points: finalProfile.points,
-      totalSpent: finalProfile.total_spent,
-      visitCount: finalProfile.visit_count,
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      phone: data.user.phone,
+      restaurantId: data.user.restaurantId,
     };
-    persist({ customer: customerData, token: data.session.access_token });
+    persist({ customer: customerData, token: data.token });
     return customerData;
   };
 
   const register = async (form) => {
-    const { data, error } = await supabase.auth.signUp({
+    const data = await registerCustomer({
       email: form.email,
       password: form.password,
-      options: {
-        data: {
-          full_name: form.name,
-          role: 'customer',
-        },
-      },
+      name: form.name,
+      phone: form.phone || null,
     });
-    if (error) throw new Error(error.message);
 
-    // Ensure profile exists with customer role
-    const profile = await getProfile(data.user.id);
-    if (!profile) {
-      await upsertProfile(data.user.id, {
-        name: form.name,
-        email: form.email,
-        phone: form.phone || null,
-        role: 'customer',
-      });
-    }
-
-    const finalProfile = await getProfile(data.user.id);
     const customerData = {
-      id: finalProfile.id,
-      name: finalProfile.name,
-      email: finalProfile.email,
-      phone: finalProfile.phone,
-      points: finalProfile.points,
-      totalSpent: finalProfile.total_spent,
-      visitCount: finalProfile.visit_count,
+      id: data.user.id,
+      name: data.user.name,
+      email: data.user.email,
+      phone: data.user.phone,
+      restaurantId: null,
     };
-    persist({ customer: customerData, token: data.session?.access_token || null });
+    persist({ customer: customerData, token: data.token });
     return customerData;
   };
 
   const logout = async () => {
-    // Don't sign out of Supabase entirely — the staff user might also be logged in.
-    // Just clear the customer session locally.
     localStorage.removeItem('servora-customer');
     setCustomer(null);
     setToken(null);
@@ -134,38 +84,15 @@ export function CustomerAuthProvider({ children }) {
       const stored = JSON.parse(localStorage.getItem('servora-customer') || 'null');
       if (!stored?.customer?.id) return;
 
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', stored.customer.id)
-        .single();
-      if (error) return null;
-
+      const profile = await getProfile();
       const enriched = {
-        id: profile.id,
-        name: profile.name,
-        email: profile.email,
-        phone: profile.phone,
-        points: profile.points,
-        totalSpent: profile.total_spent,
-        visitCount: profile.visit_count,
+        id: profile.user.id,
+        name: profile.user.name,
+        email: profile.user.email,
+        phone: profile.user.phone,
       };
 
-      // Fetch orders
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('*, items:order_items(*)')
-        .eq('customer_id', profile.id)
-        .order('created_at', { ascending: false });
-
-      // Fetch reservations
-      const { data: reservations } = await supabase
-        .from('reservations')
-        .select('*')
-        .eq('customer_id', profile.id)
-        .order('created_at', { ascending: false });
-
-      const fullCustomer = { ...enriched, orders: orders || [], reservations: reservations || [] };
+      const fullCustomer = { ...enriched };
       setCustomer(fullCustomer);
       localStorage.setItem('servora-customer', JSON.stringify({ customer: fullCustomer, token }));
       return fullCustomer;

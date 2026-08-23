@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { updateRestaurant } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input, { Select } from '../../components/ui/Input';
@@ -47,18 +47,15 @@ export default function PaymentSetup() {
     try {
       if (user?.restaurantId) {
         const currentSettings = restaurant?.settings || {};
-        await supabase
-          .from('restaurants')
-          .update({
-            settings: {
-              ...currentSettings,
-              payment: {
-                provider: form.provider,
-                notes: form.notes,
-              },
+        await updateRestaurant(user.restaurantId, {
+          settings: JSON.stringify({
+            ...currentSettings,
+            payment: {
+              provider: form.provider,
+              notes: form.notes,
             },
-          })
-          .eq('id', user.restaurantId);
+          }),
+        });
       }
       navigate('/onboarding/waiters');
     } catch (err) {

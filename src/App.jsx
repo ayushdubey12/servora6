@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import PublicLayout from './layouts/PublicLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import CustomerLayout from './layouts/CustomerLayout';
+import { CustomerRestaurantProvider } from './context/CustomerRestaurantContext';
 import KitchenLayout from './layouts/KitchenLayout';
 import StaffLayout from './layouts/StaffLayout';
 import OnboardingLayout from './layouts/OnboardingLayout';
@@ -113,29 +114,29 @@ export default function App() {
       </Route>
 
       {/* Customer Routes */}
-      <Route path="/menu/:restaurantSlug" element={<CustomerLayout />}>
+      <Route path="/menu/:restaurantSlug" element={<CustomerRestaurantProvider><CustomerLayout /></CustomerRestaurantProvider>}>
         <Route index element={<MenuPage />} />
         <Route path="item/:itemId" element={<ItemDetail />} />
       </Route>
-      <Route path="/cart" element={<CustomerLayout />}>
+      <Route path="/cart" element={<CustomerRestaurantProvider><CustomerLayout /></CustomerRestaurantProvider>}>
         <Route index element={<Cart />} />
       </Route>
-      <Route path="/checkout" element={<CustomerLayout />}>
+      <Route path="/checkout" element={<CustomerRestaurantProvider><CustomerLayout /></CustomerRestaurantProvider>}>
         <Route index element={<Checkout />} />
       </Route>
-      <Route path="/order/:orderId" element={<CustomerLayout />}>
+      <Route path="/order/:orderId" element={<CustomerRestaurantProvider><CustomerLayout /></CustomerRestaurantProvider>}>
         <Route index element={<OrderTracking />} />
       </Route>
-      <Route path="/feedback" element={<CustomerLayout />}>
+      <Route path="/feedback" element={<CustomerRestaurantProvider><CustomerLayout /></CustomerRestaurantProvider>}>
         <Route index element={<Feedback />} />
       </Route>
-      <Route path="/reserve" element={<CustomerLayout />}>
+      <Route path="/reserve" element={<CustomerRestaurantProvider><CustomerLayout /></CustomerRestaurantProvider>}>
         <Route index element={<Reserve />} />
       </Route>
-      <Route path="/account" element={<CustomerLayout />}>
+      <Route path="/account" element={<CustomerRestaurantProvider><CustomerLayout /></CustomerRestaurantProvider>}>
         <Route index element={<Account />} />
       </Route>
-      <Route path="/payment/:orderId" element={<CustomerLayout />}>
+      <Route path="/payment/:orderId" element={<CustomerRestaurantProvider><CustomerLayout /></CustomerRestaurantProvider>}>
         <Route index element={<Payment />} />
       </Route>
 

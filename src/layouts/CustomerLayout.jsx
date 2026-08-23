@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
-import { useRestaurant } from '../context/RestaurantContext';
+import { Outlet, useNavigate, useParams } from 'react-router-dom';
+import { useCustomerRestaurant } from '../context/CustomerRestaurantContext';
 import { useCustomerAuth } from '../context/CustomerAuthContext';
 import CartButton from '../components/customer/CartButton';
 import CustomerAuthModal from '../components/customer/CustomerAuthModal';
@@ -8,19 +8,22 @@ import { Icons } from '../assets/icons';
 import './CustomerLayout.css';
 
 export default function CustomerLayout() {
-  const { restaurant } = useRestaurant();
+  const { restaurant } = useCustomerRestaurant();
   const { customer } = useCustomerAuth();
   const [authOpen, setAuthOpen] = useState(false);
   const navigate = useNavigate();
+  const { restaurantSlug } = useParams();
+
+  const menuPath = restaurantSlug ? `/menu/${restaurantSlug}` : '/';
 
   return (
     <div className="customer-layout">
       <header className="customer-header">
         <div className="container">
           <div className="customer-header-inner">
-            <button className="customer-brand" onClick={() => navigate('/menu/hotel-siraj')}>
+            <button className="customer-brand" onClick={() => navigate(menuPath)}>
               <span className="customer-brand-dot" />
-              <h1 className="customer-restaurant-name">{restaurant.name}</h1>
+              <h1 className="customer-restaurant-name">{restaurant?.name || 'Menu'}</h1>
             </button>
 
             <nav className="customer-nav">

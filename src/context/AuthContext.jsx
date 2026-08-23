@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { supabase, getProfile, upsertProfile } from '../lib/supabase';
+import { loginUser, registerUser, getProfile } from '../lib/api';
 
 const AuthContext = createContext(null);
 
@@ -10,114 +10,67 @@ export function AuthProvider({ children }) {
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Hydrate session on mount and listen for auth state changes
+  // Hydrate session on mount from localStorage
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        const accessToken = session.access_token;
-        setToken(accessToken);
-        hydrateUser(session.user, accessToken);
-      } else {
-        setLoading(false);
+    async function hydrate() {
+      try {
+        const stored = JSON.parse(localStorage.getItem('servora-auth') || 'null');
+        if (stored?.user && stored?.token) {
+          // Verify token is still valid by fetching profile
+          try {
+            const { user: freshUser, restaurant: freshRestaurant } = await getProfile();
+            if (freshUser && ['owner', 'chef', 'waiter'].includes(freshUser.role)) {
+              setUser({
+                id: freshUser.id,
+                name: freshUser.name,
+                email: freshUser.email,
+                role: freshUser.role,
+                phone: freshUser.phone,
+                restaurantId: freshUser.restaurantId,
+              });
+              setRestaurant(freshRestaurant);
+              setToken(stored.token);
+              setIsAuthenticated(true);
+              // Update localStorage with fresh data so other contexts get the right restaurantId
+              localStorage.setItem('servora-auth', JSON.stringify({
+                user: { ...stored.user, restaurantId: freshUser.restaurantId },
+                token: stored.token,
+              }));
+            }
+          } catch {
+            // Token invalid, clear
+            localStorage.removeItem('servora-auth');
+          }
+        }
+      } catch {
+        // ignore
       }
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      if (session?.user) {
-        const accessToken = session.access_token;
-        setToken(accessToken);
-        await hydrateUser(session.user, accessToken);
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-        setToken(null);
-        setRestaurant(null);
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+      setLoading(false);
+    }
+    hydrate();
   }, []);
 
-  async function hydrateUser(authUser, accessToken) {
-    // Get the user's profile (contains role, restaurant_id, etc.)
-    let profile = await getProfile(authUser.id);
-
-    // If no profile exists yet (trigger didn't fire), create one
-    if (!profile) {
-      profile = await upsertProfile(authUser.id, {
-        name: authUser.user_metadata?.full_name || authUser.email,
-        email: authUser.email,
-        role: authUser.user_metadata?.role || 'customer',
-      });
-    }
-
-    // Only set as authenticated if the user has a staff role
-    if (profile && ['owner', 'chef', 'waiter'].includes(profile.role)) {
-      setUser({
-        id: profile.id,
-        name: profile.name,
-        email: profile.email,
-        role: profile.role,
-        phone: profile.phone,
-        restaurantId: profile.restaurant_id,
-      });
-      setIsAuthenticated(true);
-
-      // If the profile has a restaurant_id, fetch the restaurant
-      if (profile.restaurant_id) {
-        const { data: rest } = await supabase
-          .from('restaurants')
-          .select('*')
-          .eq('id', profile.restaurant_id)
-          .single();
-        if (rest) setRestaurant(rest);
-      }
-
-      // Persist to localStorage for backward compatibility with components
-      // that read it directly (e.g. authHeaders in WaiterSetup)
-      localStorage.setItem('servora-auth', JSON.stringify({
-        user: {
-          id: profile.id,
-          name: profile.name,
-          email: profile.email,
-          role: profile.role,
-          phone: profile.phone,
-          restaurantId: profile.restaurant_id,
-        },
-        token: accessToken,
-      }));
-    } else {
-      // Customer role — not a staff user
-      setIsAuthenticated(false);
-    }
-
-    setLoading(false);
-  }
-
   const login = async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw new Error(error.message);
+    const data = await loginUser(email, password);
 
-    const profile = await getProfile(data.user.id);
-    if (!profile || !['owner', 'chef', 'waiter'].includes(profile?.role)) {
-      await supabase.auth.signOut();
+    if (!['owner', 'chef', 'waiter'].includes(data.user.role)) {
       throw new Error('No staff account found. Please check your credentials.');
     }
 
-    const loggedInUser = {
-      id: profile.id,
-      name: profile.name,
-      email: profile.email,
-      role: profile.role,
-      phone: profile.phone,
-      restaurantId: profile.restaurant_id,
-    };
-    return loggedInUser;
+    setUser(data.user);
+    setRestaurant(data.restaurant);
+    setToken(data.token);
+    setIsAuthenticated(true);
+
+    localStorage.setItem('servora-auth', JSON.stringify({
+      user: data.user,
+      token: data.token,
+    }));
+
+    return data.user;
   };
 
-  const logout = async () => {
-    await supabase.auth.signOut();
+  const logout = () => {
     localStorage.removeItem('servora-auth');
     setUser(null);
     setIsAuthenticated(false);
@@ -126,65 +79,34 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (data) => {
-    const { data: authData, error } = await supabase.auth.signUp({
+    const result = await registerUser({
       email: data.email,
       password: data.password,
-      options: {
-        data: {
-          full_name: data.name,
-          role: 'owner',
-        },
-      },
-    });
-    if (error) throw new Error(error.message);
-
-    // Create profile with role=owner
-    const userId = authData.user.id;
-    await upsertProfile(userId, {
       name: data.name,
-      email: data.email,
-      role: 'owner',
+      restaurantName: data.restaurantName,
     });
 
-    // Create the restaurant
-    const slug = data.restaurantName
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '');
-
-    const { data: rest, error: restError } = await supabase
-      .from('restaurants')
-      .insert({ name: data.restaurantName, slug, description: '' })
-      .select()
-      .single();
-    if (restError) throw new Error(restError.message);
-
-    // Link restaurant to profile
-    await upsertProfile(userId, { restaurant_id: rest.id });
-
-    // Set state
-    const profile = await getProfile(userId);
-    setUser({
-      id: profile.id,
-      name: profile.name,
-      email: profile.email,
-      role: profile.role,
-      restaurantId: profile.restaurant_id,
-    });
-    setRestaurant(rest);
+    setUser(result.user);
+    setRestaurant(result.restaurant);
+    setToken(result.token);
     setIsAuthenticated(true);
-    setToken(authData.session?.access_token || null);
 
     localStorage.setItem('servora-auth', JSON.stringify({
-      user: { id: profile.id, name: profile.name, email: profile.email, role: profile.role, restaurantId: profile.restaurant_id },
-      token: authData.session?.access_token,
+      user: result.user,
+      token: result.token,
     }));
 
     return true;
   };
 
+  const signInWithGoogle = async () => {
+    // Google OAuth not supported with self-hosted backend
+    // Redirect to a mock or disable for now
+    throw new Error('Google sign-in is not available with the current backend. Please use email/password.');
+  };
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, token, restaurant, loading, login, logout, register }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, token, restaurant, loading, login, logout, register, signInWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );

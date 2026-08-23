@@ -1,246 +1,154 @@
-import { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { supabase } from '../lib/supabase';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { getOrders, createOrder, updateOrderStatus, claimOrder, releaseOrder, getOrder } from '../lib/api';
 import { useAuth } from './AuthContext';
 
 const OrderContext = createContext(null);
 
 function orderFromRow(row) {
-  const claimedBy = row.claimed_by
-    ? { id: row.claimed_by.id, name: row.claimed_by.name, role: row.claimed_by.role }
+  const claimedBy = row.claimedBy
+    ? { id: row.claimedBy.id, name: row.claimedBy.name, role: row.claimedBy.role }
     : null;
   return {
     id: row.id,
-    restaurantId: row.restaurant_id,
-    tableNumber: row.table_number,
-    customerName: row.customer_name,
+    restaurantId: row.restaurantId || row.restaurant_id,
+    tableNumber: row.tableNumber || row.table_number,
+    customerName: row.customerName || row.customer_name,
     status: row.status,
-    paymentStatus: row.payment_status,
-    subtotal: row.subtotal,
-    tax: row.tax,
-    total: row.total,
-    claimedById: row.claimed_by_id,
-    customerId: row.customer_id,
-    pointsEarned: row.points_earned,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    paymentStatus: row.paymentStatus || row.payment_status,
+    subtotal: (row.subtotal || 0) / 100,
+    tax: (row.tax || 0) / 100,
+    total: (row.total || 0) / 100,
+    claimedById: row.claimedById || row.claimed_by_id,
+    customerId: row.customerId || row.customer_id,
+    pointsEarned: row.pointsEarned || row.points_earned,
+    createdAt: row.createdAt || row.created_at,
+    updatedAt: row.updatedAt || row.updated_at,
     claimedBy,
     items: (row.items || []).map(item => ({
       id: item.id,
-      orderId: item.order_id,
-      itemId: item.item_id,
+      orderId: item.orderId || item.order_id,
+      itemId: item.itemId || item.item_id,
       name: item.name,
       quantity: item.quantity,
-      price: item.price,
-      menuItem: item.menu_items ? { id: item.menu_items.id, name: item.menu_items.name } : null,
+      price: (item.price || 0) / 100,
+      menuItem: item.menuItem || item.menu_items || null,
     })),
   };
 }
 
 export function OrderProvider({ children }) {
-  const { isAuthenticated, token } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [orders, setOrders] = useState([]);
   const [currentOrder, setCurrentOrder] = useState(null);
   const [loading, setLoading] = useState(true);
-  const channelRef = useRef(null);
 
   // Fetch all orders on mount / when auth changes
   useEffect(() => {
     if (!isAuthenticated) { setOrders([]); setLoading(false); return; }
     setLoading(true);
-    supabase
-      .from('orders')
-      .select('*, items:order_items(*, menu_items(id, name)), claimed_by:profiles!orders_claimed_by_id_fkey(id, name, role)')
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
+    getOrders()
+      .then(data => {
         if (data) setOrders(data.map(orderFromRow));
       })
+      .catch(err => console.error('[Orders fetch]', err))
       .finally(() => setLoading(false));
-  }, [isAuthenticated, token]);
+  }, [isAuthenticated]);
 
-  // Subscribe to real-time order changes
+  // Poll for order updates every 10 seconds (simpler than WebSockets)
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const channel = supabase
-      .channel('orders-realtime')
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'orders' },
-        async (payload) => {
-          // Fetch the full order with items
-          const { data: fullOrder } = await supabase
-            .from('orders')
-            .select('*, items:order_items(*, menu_items(id, name)), claimed_by:profiles!orders_claimed_by_id_fkey(id, name, role)')
-            .eq('id', payload.new.id)
-            .single();
-          if (fullOrder) setOrders(prev => [orderFromRow(fullOrder), ...prev]);
-        }
-      )
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'orders' },
-        async (payload) => {
-          const { data: fullOrder } = await supabase
-            .from('orders')
-            .select('*, items:order_items(*, menu_items(id, name)), claimed_by:profiles!orders_claimed_by_id_fkey(id, name, role)')
-            .eq('id', payload.new.id)
-            .single();
-          if (fullOrder) {
-            setOrders(prev => prev.map(o => (o.id === fullOrder.id ? orderFromRow(fullOrder) : o)));
-          }
-        }
-      )
-      .subscribe();
-
-    channelRef.current = channel;
-
-    return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
-        channelRef.current = null;
+    const interval = setInterval(async () => {
+      try {
+        const data = await getOrders();
+        if (data) setOrders(data.map(orderFromRow));
+      } catch {
+        // ignore polling errors
       }
-    };
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [isAuthenticated]);
 
-  const updateOrderStatus = useCallback(async (orderId, status) => {
-    const updateData = { status };
-    if (status === 'PAID' || status === 'COMPLETED') {
-      updateData.payment_status = 'PAID';
+  // Also poll for a specific order (used by customer tracking page)
+  const fetchAndTrackOrder = useCallback(async (orderId) => {
+    try {
+      const data = await getOrder(orderId);
+      if (data) {
+        const parsed = orderFromRow(data);
+        setOrders(prev => {
+          const idx = prev.findIndex(o => o.id === orderId);
+          if (idx >= 0) {
+            const next = [...prev];
+            next[idx] = parsed;
+            return next;
+          }
+          return [parsed, ...prev];
+        });
+        setCurrentOrder(parsed);
+        return parsed;
+      }
+    } catch {
+      // ignore
     }
-    const { error } = await supabase
-      .from('orders')
-      .update(updateData)
-      .eq('id', orderId);
-    if (error) throw new Error(error.message);
+    return null;
+  }, []);
+
+  const updateOrderStatusFn = useCallback(async (orderId, status) => {
+    const updated = await updateOrderStatus(orderId, status);
+    if (updated) {
+      setOrders(prev => prev.map(o => o.id === updated.id ? orderFromRow(updated) : o));
+    }
   }, []);
 
   const addOrder = useCallback(async (payload) => {
-    // Resolve the restaurant
-    let restaurantId = payload.restaurantId;
-    if (!restaurantId) {
-      const { data: rest } = await supabase.from('restaurants').select('id').limit(1).single();
-      restaurantId = rest?.id;
-    }
-    if (!restaurantId) throw new Error('No restaurant configured');
+    const resolvedItems = payload.items.map(entry => ({
+      itemId: entry.itemId,
+      name: entry.name,
+      quantity: entry.quantity,
+    }));
 
-    const { tableNumber, customerName, items, customerId } = payload;
-
-    if (!tableNumber || !customerName || !items?.length) {
-      throw new Error('Table number, customer name, and items are required');
-    }
-
-    // Resolve menu items to get prices
-    const resolvedItems = [];
-    for (const entry of items) {
-      const { data: menuItem } = await supabase
-        .from('menu_items')
-        .select('id, name, price')
-        .eq('id', entry.itemId)
-        .single();
-      resolvedItems.push({
-        item_id: menuItem?.id || null,
-        name: menuItem?.name || entry.name || 'Unknown Item',
-        quantity: entry.quantity,
-        price: menuItem?.price || 0,
-      });
-    }
-
-    const subtotal = resolvedItems.reduce((sum, i) => sum + i.price * i.quantity, 0);
-    const tax = subtotal * 0.05;
-    const total = subtotal + tax;
-
-    const { data: order, error } = await supabase
-      .from('orders')
-      .insert({
-        restaurant_id: restaurantId,
-        table_number: Number(tableNumber),
-        customer_name: customerName,
-        status: 'PENDING',
-        payment_status: 'PENDING',
-        subtotal,
-        tax,
-        total,
-        customer_id: customerId || null,
-        points_earned: Math.floor(total),
-      })
-      .select('*, items:order_items(*, menu_items(id, name)), claimed_by:profiles!orders_claimed_by_id_fkey(id, name, role)')
-      .single();
-
-    if (error) throw new Error(error.message);
-
-    // Insert order items
-    if (order) {
-      const orderItems = resolvedItems.map(item => ({
-        order_id: order.id,
-        item_id: item.item_id,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-      }));
-      await supabase.from('order_items').insert(orderItems);
-    }
+    const order = await createOrder({
+      restaurantId: payload.restaurantId,
+      tableNumber: payload.tableNumber,
+      customerName: payload.customerName,
+      items: resolvedItems,
+      customerId: payload.customerId,
+    });
 
     const finalOrder = order ? orderFromRow(order) : null;
+    if (finalOrder) {
+      setOrders(prev => [finalOrder, ...prev]);
+    }
     setCurrentOrder(finalOrder);
     return finalOrder;
   }, []);
 
-  const claimOrder = useCallback(async (orderId, waiterId) => {
-    // First check current status
-    const { data: order } = await supabase
-      .from('orders')
-      .select('status, claimed_by_id')
-      .eq('id', orderId)
-      .single();
-
-    if (order?.claimed_by_id && order.claimed_by_id !== waiterId) {
-      throw new Error('Order already claimed by another waiter');
+  const claimOrderFn = useCallback(async (orderId, waiterId) => {
+    const updated = await claimOrder(orderId, waiterId);
+    if (updated) {
+      setOrders(prev => prev.map(o => o.id === updated.id ? orderFromRow(updated) : o));
+      return orderFromRow(updated);
     }
-
-    const updateData = { claimed_by_id: waiterId };
-    if (order?.status === 'PENDING') updateData.status = 'ACCEPTED';
-
-    const { data: updated, error } = await supabase
-      .from('orders')
-      .update(updateData)
-      .eq('id', orderId)
-      .select('*, items:order_items(*, menu_items(id, name)), claimed_by:profiles!orders_claimed_by_id_fkey(id, name, role)')
-      .single();
-
-    if (error) throw new Error(error.message);
-    return updated ? orderFromRow(updated) : null;
+    return null;
   }, []);
 
-  const releaseOrder = useCallback(async (orderId) => {
-    const { data: order } = await supabase
-      .from('orders')
-      .select('status')
-      .eq('id', orderId)
-      .single();
-
-    const updateData = { claimed_by_id: null };
-    if (order?.status === 'ACCEPTED') updateData.status = 'PENDING';
-
-    const { data: updated, error } = await supabase
-      .from('orders')
-      .update(updateData)
-      .eq('id', orderId)
-      .select('*, items:order_items(*, menu_items(id, name)), claimed_by:profiles!orders_claimed_by_id_fkey(id, name, role)')
-      .single();
-
-    if (error) throw new Error(error.message);
-    return updated ? orderFromRow(updated) : null;
+  const releaseOrderFn = useCallback(async (orderId) => {
+    const updated = await releaseOrder(orderId);
+    if (updated) {
+      setOrders(prev => prev.map(o => o.id === updated.id ? orderFromRow(updated) : o));
+      return orderFromRow(updated);
+    }
+    return null;
   }, []);
 
-  // Fetch a single order by ID (used by customer pages)
   const fetchOrder = useCallback(async (orderId) => {
-    const { data, error } = await supabase
-      .from('orders')
-      .select('*, items:order_items(*, menu_items(id, name)), claimed_by:profiles!orders_claimed_by_id_fkey(id, name, role)')
-      .eq('id', orderId)
-      .single();
-    if (error) return null;
-    return orderFromRow(data);
+    try {
+      const data = await getOrder(orderId);
+      return data ? orderFromRow(data) : null;
+    } catch {
+      return null;
+    }
   }, []);
 
   const derived = useMemo(() => ({
@@ -254,8 +162,12 @@ export function OrderProvider({ children }) {
   return (
     <OrderContext.Provider value={{
       orders, currentOrder, setCurrentOrder,
-      updateOrderStatus, addOrder, claimOrder, releaseOrder,
+      updateOrderStatus: updateOrderStatusFn,
+      addOrder,
+      claimOrder: claimOrderFn,
+      releaseOrder: releaseOrderFn,
       fetchOrder,
+      fetchAndTrackOrder,
       loading,
       ...derived,
     }}>

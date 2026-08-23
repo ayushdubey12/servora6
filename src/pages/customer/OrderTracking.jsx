@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useOrders } from '../../context/OrderContext';
 import { Icons } from '../../assets/icons';
@@ -15,6 +15,7 @@ const STATUS_CONFIG = {
   PREPARING: { label: 'Preparing', color: 'var(--tertiary)', icon: Icons.Clock },
   READY: { label: 'Ready', color: 'var(--secondary)', icon: Icons.CheckCircle },
   SERVED: { label: 'Served', color: 'var(--success)', icon: Icons.CheckCircle },
+  PAYMENT_PENDING: { label: 'Payment Due', color: 'var(--primary)', icon: Icons.CreditCard },
   PAID: { label: 'Paid', color: 'var(--success)', icon: Icons.CheckCircle },
   COMPLETED: { label: 'Completed', color: 'var(--success)', icon: Icons.CheckCircle },
 };
@@ -33,24 +34,57 @@ function isPayable(status) {
   return status === 'SERVED' || status === 'PAYMENT_PENDING';
 }
 
+function isTerminal(status) {
+  return status === 'PAID' || status === 'COMPLETED' || status === 'CANCELLED';
+}
+
 export default function OrderTracking() {
   const { orderId } = useParams();
-  const { orders, currentOrder, fetchOrder } = useOrders();
+  const { orders, currentOrder, fetchAndTrackOrder } = useOrders();
   const [fetchedOrder, setFetchedOrder] = useState(null);
+  const [prevStatus, setPrevStatus] = useState(null);
   const navigate = useNavigate();
+  const pollRef = useRef(null);
 
-  // Fetch order via Supabase if not in context
+  // Fetch order on mount
   useEffect(() => {
     if (!orderId || orderId === 'preview') return;
-    fetchOrder(orderId).then(order => {
+    fetchAndTrackOrder(orderId).then(order => {
       if (order) setFetchedOrder(order);
     });
-  }, [orderId, fetchOrder]);
+  }, [orderId, fetchAndTrackOrder]);
+
+  // Poll for status updates every 5 seconds until order is paid/completed
+  useEffect(() => {
+    if (!orderId || orderId === 'preview') return;
+
+    pollRef.current = setInterval(async () => {
+      const updated = await fetchAndTrackOrder(orderId);
+      if (updated) {
+        setFetchedOrder(updated);
+        // Stop polling once order is terminal
+        if (isTerminal(updated.status)) {
+          clearInterval(pollRef.current);
+        }
+      }
+    }, 5000);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+  }, [orderId, fetchAndTrackOrder]);
 
   const order =
     orderId === 'preview'
       ? currentOrder
       : orders.find(o => o.id === orderId) || fetchedOrder || currentOrder;
+
+  // Detect status changes for animation
+  useEffect(() => {
+    if (order && order.status !== prevStatus) {
+      setPrevStatus(order.status);
+    }
+  }, [order?.status, prevStatus]);
 
   if (!order) {
     return (
@@ -97,16 +131,33 @@ export default function OrderTracking() {
           </div>
         )}
 
+        {/* Live status indicator */}
+        {!isTerminal(order.status) && (
+          <div className="tracking-live-indicator">
+            <span className="tracking-live-dot" />
+            <span className="tracking-live-text">Live — updating automatically</span>
+          </div>
+        )}
+
         <div className="tracking-timeline">
           {STATUS_STEPS.map((step, index) => {
             const isComplete = index <= currentStatusIndex;
             const isCurrent = index === currentStatusIndex;
             const stepConfig = STATUS_CONFIG[step];
+            const justCompleted = isCurrent && prevStatus && stepIndexFor(prevStatus) < index;
 
             return (
               <div key={step} className={`timeline-step ${isComplete ? 'complete' : ''} ${isCurrent ? 'current' : ''}`}>
-                <div className="timeline-marker" style={isComplete ? { background: stepConfig.color, borderColor: stepConfig.color } : {}}>
+                <div className={`timeline-marker ${justCompleted ? 'pulse-wave' : ''}`} style={isComplete ? { background: stepConfig.color, borderColor: stepConfig.color } : {}}>
                   {isComplete ? <Icons.Check size={14} /> : <span className="timeline-marker-num">{index + 1}</span>}
+                  {/* Wave animation rings */}
+                  {isCurrent && !isTerminal(order.status) && (
+                    <>
+                      <span className="timeline-pulse-ring ring-1" style={{ borderColor: stepConfig.color }} />
+                      <span className="timeline-pulse-ring ring-2" style={{ borderColor: stepConfig.color }} />
+                      <span className="timeline-pulse-ring ring-3" style={{ borderColor: stepConfig.color }} />
+                    </>
+                  )}
                 </div>
                 <div className="timeline-content">
                   <span className="timeline-label" style={isCurrent ? { color: stepConfig.color } : {}}>{stepConfig.label}</span>
@@ -127,17 +178,18 @@ export default function OrderTracking() {
               <div key={i} className="tracking-item">
                 <span className="tracking-item-qty">{item.quantity}×</span>
                 <span className="tracking-item-name">{item.menuItem?.name || item.name || 'Item'}</span>
-                <span className="tracking-item-price">${((item.price || 0) * item.quantity).toFixed(0)}</span>
+                <span className="tracking-item-price">₹{((item.price || 0) * item.quantity).toFixed(0)}</span>
               </div>
             ))}
           </div>
           <div className="tracking-totals">
-            <div className="tracking-total-row"><span>Subtotal</span><span>${order.subtotal?.toFixed(0)}</span></div>
-            <div className="tracking-total-row"><span>Tax</span><span>${order.tax?.toFixed(0)}</span></div>
-            <div className="tracking-total-row tracking-grand-total"><span>Total</span><span>${order.total?.toFixed(0)}</span></div>
+            <div className="tracking-total-row"><span>Subtotal</span><span>₹{order.subtotal?.toFixed(0)}</span></div>
+            <div className="tracking-total-row"><span>Tax</span><span>₹{order.tax?.toFixed(0)}</span></div>
+            <div className="tracking-total-row tracking-grand-total"><span>Total</span><span>₹{order.total?.toFixed(0)}</span></div>
           </div>
         </div>
 
+        {/* Payment banner — enabled when order is served or payment pending */}
         {isPayable(order.status) && (
           <div className="tracking-pay-banner">
             <Icons.CreditCard size={20} />
@@ -146,7 +198,7 @@ export default function OrderTracking() {
               <span className="tracking-pay-subtitle">Your order has been served. Complete payment to finish.</span>
             </div>
             <Button variant="primary" size="md" onClick={() => navigate(`/payment/${order.id}`)}>
-              Pay ${order.total?.toFixed(0)}
+              Pay ₹{order.total?.toFixed(0)}
             </Button>
           </div>
         )}

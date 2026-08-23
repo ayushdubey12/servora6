@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useOrders } from '../../context/OrderContext';
-import { useRestaurant } from '../../context/RestaurantContext';
+import { useCustomerRestaurant } from '../../context/CustomerRestaurantContext';
 import { useCustomerAuth } from '../../context/CustomerAuthContext';
 import CustomerAuthModal from '../../components/customer/CustomerAuthModal';
 import Button from '../../components/ui/Button';
@@ -12,12 +12,14 @@ import './Checkout.css';
 export default function Checkout() {
   const { items, subtotal, tax, total, tableNumber, setTableNumber, clearCart } = useCart();
   const { addOrder } = useOrders();
-  const { tables, restaurant } = useRestaurant();
+  const { restaurant, tables: availableTablesRaw } = useCustomerRestaurant();
+  const tables = availableTablesRaw || [];
   const { customer } = useCustomerAuth();
   const navigate = useNavigate();
 
   const [customerName, setCustomerName] = useState('');
   const [selectedTable, setSelectedTable] = useState(tableNumber || '');
+  const tableLocked = !!tableNumber;
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,7 +75,7 @@ export default function Checkout() {
           <div className="checkout-empty">
             <h2>Your cart is empty</h2>
             <p>Add some items before checking out.</p>
-            <Button variant="primary" onClick={() => navigate('/menu/hotel-siraj')}>Browse Menu</Button>
+            <Button variant="primary" onClick={() => navigate(-1)}>Browse Menu</Button>
           </div>
         </div>
       </div>
@@ -125,21 +127,30 @@ export default function Checkout() {
 
           <div className="checkout-section">
             <label className="checkout-label">Table Number</label>
-            <select
-              value={selectedTable}
-              onChange={(e) => setSelectedTable(e.target.value)}
-              className="checkout-select"
-              required
-            >
-              <option value="">Select a table</option>
-              {availableTables.map(table => (
-                <option key={table.id} value={table.number}>
-                  Table {table.number} ({table.seats} seats){table.section ? ` — ${table.section}` : ''}
-                </option>
-              ))}
-            </select>
-            {availableTables.length === 0 && (
-              <p className="checkout-hint">No available tables at the moment.</p>
+            {tableLocked ? (
+              <div className="checkout-table-locked">
+                <Icons.MapPin size={16} />
+                <span>Table <strong>{selectedTable}</strong> (auto-detected from QR code)</span>
+              </div>
+            ) : (
+              <>
+                <select
+                  value={selectedTable}
+                  onChange={(e) => setSelectedTable(e.target.value)}
+                  className="checkout-select"
+                  required
+                >
+                  <option value="">Select a table</option>
+                  {availableTables.map(table => (
+                    <option key={table.id} value={table.number}>
+                      Table {table.number} ({table.seats} seats){table.section ? ` — ${table.section}` : ''}
+                    </option>
+                  ))}
+                </select>
+                {availableTables.length === 0 && (
+                  <p className="checkout-hint">No available tables at the moment.</p>
+                )}
+              </>
             )}
           </div>
 

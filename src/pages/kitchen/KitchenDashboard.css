@@ -28,7 +28,7 @@
 }
 
 .kds-dash-title {
-  font-family: 'Plus Jakarta Sans', var(--font-sans);
+  font-family: var(--font-display);
   font-size: 24px;
   font-weight: 800;
   color: var(--on-surface);

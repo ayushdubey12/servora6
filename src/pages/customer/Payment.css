@@ -101,6 +101,60 @@
   font-family: var(--font-mono);
 }
 
+/* ── Error Banner ──────────────────────── */
+.payment-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: var(--radius-lg);
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.payment-error-banner svg {
+  flex-shrink: 0;
+  color: #dc2626;
+}
+
+.payment-error-close {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #dc2626;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+/* ── Razorpay Section ──────────────────── */
+.payment-razorpay-section {
+  padding: 32px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.payment-razorpay-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  margin-top: 12px;
+  text-align: center;
+}
+
+.payment-razorpay-hint svg {
+  color: var(--tertiary);
+  flex-shrink: 0;
+}
+
 /* ── Body Card ──────────────────────────── */
 .payment-body {
   background: white;

@@ -1,45 +1,64 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Card, { CardHeader, CardTitle, CardBody } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
 import Table from '../../components/ui/Table';
 import Modal from '../../components/ui/Modal';
-import Input from '../../components/ui/Input';
 import { Icons } from '../../assets/icons';
-import { customers } from '../../data/mockData';
+import { getCustomers } from '../../lib/api';
+
+const TIER_CONFIG = {
+  bronze: { label: 'Bronze', variant: 'secondary' },
+  silver: { label: 'Silver', variant: 'primary' },
+  gold: { label: 'Gold', variant: 'tertiary' },
+  platinum: { label: 'Platinum', variant: 'success' },
+};
 
 export default function Customers() {
+  const [customers, setCustomers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedCustomer, setSelectedCustomer] = useState(null);
 
+  useEffect(() => {
+    getCustomers().then(data => {
+      setCustomers(data);
+      setLoading(false);
+    }).catch(() => setLoading(false));
+  }, []);
+
   const filtered = useMemo(() => {
     let data = [...customers];
-    if (search) data = data.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase()));
-    return data.sort((a, b) => b.totalSpent - a.totalSpent);
-  }, [search]);
+    if (search) data = data.filter(c =>
+      (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (c.email || '').toLowerCase().includes(search.toLowerCase())
+    );
+    return data.sort((a, b) => (b.totalSpent || 0) - (a.totalSpent || 0));
+  }, [customers, search]);
 
-  const totalSpent = useMemo(() => customers.reduce((s, c) => s + c.totalSpent, 0), []);
-  const avgRating = useMemo(() => (customers.reduce((s, c) => s + c.rating, 0) / customers.length).toFixed(1), []);
+  const totalSpent = useMemo(() => customers.reduce((s, c) => s + (c.totalSpent || 0), 0), [customers]);
+  const avgRating = useMemo(() => {
+    if (customers.length === 0) return '0.0';
+    return (customers.reduce((s, c) => s + (c.tier === 'gold' ? 5 : c.tier === 'silver' ? 4 : 3), 0) / customers.length).toFixed(1);
+  }, [customers]);
 
   const columns = [
     { header: 'Customer', field: 'name', align: 'left', render: (row) => (
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-xs font-medium text-primary">{row.name.split(' ').map(n => n[0]).join('')}</div>
+        <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-xs font-medium text-primary">{(row.name || 'U').split(' ').map(n => n[0]).join('')}</div>
         <div>
-          <p className="text-sm font-medium">{row.name}</p>
+          <p className="text-sm font-medium">{row.name || 'Unknown'}</p>
           <p className="text-xs text-muted">{row.email}</p>
         </div>
       </div>
     )},
-    { header: 'Visits', field: 'visits', align: 'center', render: (row) => <span className="text-sm font-mono">{row.visits}</span> },
-    { header: 'Total Spent', field: 'totalSpent', align: 'right', render: (row) => <span className="text-sm font-mono text-primary">${row.totalSpent.toFixed(2)}</span> },
-    { header: 'Rating', field: 'rating', align: 'center', render: (row) => (
-      <div className="flex items-center justify-center gap-1">
-        <Icons.Star size={14} className="text-tertiary" fill="var(--tertiary)" />
-        <span className="text-sm font-mono">{row.rating}</span>
-      </div>
-    )},
-    { header: 'Last Visit', field: 'lastVisit', align: 'left', render: (row) => <span className="text-sm text-muted">{row.lastVisit}</span> },
+    { header: 'Visits', field: 'orderCount', align: 'center', render: (row) => <span className="text-sm font-mono">{row.orderCount || 0}</span> },
+    { header: 'Total Spent', field: 'totalSpent', align: 'right', render: (row) => <span className="text-sm font-mono text-primary">₹{((row.totalSpent || 0) / 100).toFixed(0)}</span> },
+    { header: 'Points', field: 'points', align: 'center', render: (row) => <span className="text-sm font-mono">{row.points || 0}</span> },
+    { header: 'Tier', field: 'tier', align: 'center', render: (row) => {
+      const tc = TIER_CONFIG[row.tier] || TIER_CONFIG.bronze;
+      return <Badge variant={tc.variant} size="sm">{tc.label}</Badge>;
+    }},
     { header: 'Actions', field: 'id', align: 'center', render: (row) => (
       <button onClick={(e) => { e.stopPropagation(); setSelectedCustomer(row); }} className="p-1.5 rounded-md glass-hover text-primary" title="View"><Icons.Eye size={16} /></button>
     )},
@@ -62,13 +81,13 @@ export default function Customers() {
         <Card>
           <CardBody>
             <p className="text-xs text-muted font-mono mb-1">Total Revenue</p>
-            <p className="text-2xl font-semibold text-primary">${totalSpent.toLocaleString()}</p>
+            <p className="text-2xl font-semibold text-primary">₹{(totalSpent / 100).toLocaleString()}</p>
           </CardBody>
         </Card>
         <Card>
           <CardBody>
-            <p className="text-xs text-muted font-mono mb-1">Avg Rating</p>
-            <p className="text-2xl font-semibold text-tertiary">{avgRating}</p>
+            <p className="text-xs text-muted font-mono mb-1">Avg Points</p>
+            <p className="text-2xl font-semibold text-tertiary">{customers.length > 0 ? Math.round(customers.reduce((s, c) => s + (c.points || 0), 0) / customers.length) : 0}</p>
           </CardBody>
         </Card>
       </div>
@@ -85,11 +104,15 @@ export default function Customers() {
           </div>
         </CardHeader>
         <CardBody className="p-0">
-          <Table columns={columns} data={filtered} keyField="id" onRowClick={setSelectedCustomer} />
+          {loading ? (
+            <div className="p-8 text-center text-muted text-sm font-mono">Loading customers...</div>
+          ) : (
+            <Table columns={columns} data={filtered} keyField="id" onRowClick={setSelectedCustomer} />
+          )}
         </CardBody>
       </Card>
 
-      <Modal isOpen={!!selectedCustomer} onClose={() => setSelectedCustomer(null)} title={selectedCustomer?.name} maxWidth="500px" footer={
+      <Modal isOpen={!!selectedCustomer} onClose={() => setSelectedCustomer(null)} title={selectedCustomer?.name || 'Customer'} maxWidth="500px" footer={
         <div className="flex items-center justify-end gap-3">
           <Button variant="secondary" onClick={() => setSelectedCustomer(null)}>Close</Button>
         </div>
@@ -98,11 +121,12 @@ export default function Customers() {
           <div className="flex flex-col gap-4">
             <div className="grid grid-2 gap-4">
               <div><p className="text-xs text-muted font-mono mb-1">Email</p><p className="text-sm">{selectedCustomer.email}</p></div>
-              <div><p className="text-xs text-muted font-mono mb-1">Phone</p><p className="text-sm font-mono">{selectedCustomer.phone}</p></div>
-              <div><p className="text-xs text-muted font-mono mb-1">Total Visits</p><p className="text-sm font-mono">{selectedCustomer.visits}</p></div>
-              <div><p className="text-xs text-muted font-mono mb-1">Total Spent</p><p className="text-sm font-mono text-primary">${selectedCustomer.totalSpent.toFixed(2)}</p></div>
-              <div><p className="text-xs text-muted font-mono mb-1">Rating</p><div className="flex items-center gap-1"><Icons.Star size={16} className="text-tertiary" fill="var(--tertiary)" /><span className="text-sm">{selectedCustomer.rating}</span></div></div>
-              <div><p className="text-xs text-muted font-mono mb-1">Last Visit</p><p className="text-sm">{selectedCustomer.lastVisit}</p></div>
+              <div><p className="text-xs text-muted font-mono mb-1">Phone</p><p className="text-sm font-mono">{selectedCustomer.phone || '—'}</p></div>
+              <div><p className="text-xs text-muted font-mono mb-1">Total Orders</p><p className="text-sm font-mono">{selectedCustomer.orderCount || 0}</p></div>
+              <div><p className="text-xs text-muted font-mono mb-1">Total Spent</p><p className="text-sm font-mono text-primary">₹{((selectedCustomer.totalSpent || 0) / 100).toFixed(0)}</p></div>
+              <div><p className="text-xs text-muted font-mono mb-1">Points</p><p className="text-sm font-mono">{selectedCustomer.points || 0}</p></div>
+              <div><p className="text-xs text-muted font-mono mb-1">Tier</p><Badge variant={(TIER_CONFIG[selectedCustomer.tier] || TIER_CONFIG.bronze).variant} size="sm">{(TIER_CONFIG[selectedCustomer.tier] || TIER_CONFIG.bronze).label}</Badge></div>
+              <div><p className="text-xs text-muted font-mono mb-1">Member Since</p><p className="text-sm">{selectedCustomer.createdAt ? new Date(selectedCustomer.createdAt).toLocaleDateString() : '—'}</p></div>
             </div>
           </div>
         )}

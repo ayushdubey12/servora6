@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { createCategory, createMenuItem } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input, { Textarea } from '../../components/ui/Input';
@@ -47,29 +47,23 @@ export default function MenuSetup() {
       if (user?.restaurantId) {
         const slug = form.categoryName.toLowerCase().replace(/\s+/g, '-');
 
-        // Insert category
-        const { data: category, error: catError } = await supabase
-          .from('categories')
-          .insert({
-            name: form.categoryName,
-            slug,
-            restaurant_id: user.restaurantId,
-            sort_order: 0,
-          })
-          .select()
-          .single();
+        // Create category
+        const category = await createCategory({
+          name: form.categoryName,
+          slug,
+          restaurantId: user.restaurantId,
+          sortOrder: 0,
+        });
 
-        if (catError) throw new Error(catError.message);
-
-        // Insert menu item
-        await supabase.from('menu_items').insert({
+        // Create menu item (price in paise)
+        await createMenuItem({
           name: form.itemName,
           description: form.description,
-          price: Number(form.price),
-          is_veg: true,
-          is_available: true,
-          restaurant_id: user.restaurantId,
-          category_id: category.id,
+          price: Math.round(Number(form.price) * 100),
+          isVeg: true,
+          isAvailable: true,
+          restaurantId: user.restaurantId,
+          categoryId: category.id,
         });
       }
       navigate('/onboarding/payments');

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { updateRestaurant } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Input, { Textarea } from '../../components/ui/Input';
@@ -48,16 +48,13 @@ export default function RestaurantSetup() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(nextDraft));
     try {
       if (user?.restaurantId) {
-        await supabase
-          .from('restaurants')
-          .update({
-            name: form.name,
-            description: form.description,
-            phone: form.phone,
-            email: form.email,
-            address: form.address,
-          })
-          .eq('id', user.restaurantId);
+        await updateRestaurant(user.restaurantId, {
+          name: form.name,
+          description: form.description,
+          phone: form.phone,
+          email: form.email,
+          address: form.address,
+        });
       }
       navigate('/onboarding/branch');
     } catch (err) {

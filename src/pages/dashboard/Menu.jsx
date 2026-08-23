@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import Card, { CardHeader, CardTitle, CardBody } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
@@ -7,38 +7,84 @@ import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import { Icons } from '../../assets/icons';
 import { useRestaurant } from '../../context/RestaurantContext';
-import { menuItems, categories as allCategories } from '../../data/mockData';
+import { useAuth } from '../../context/AuthContext';
+import { createMenuItem, updateMenuItem } from '../../lib/api';
 
 export default function Menu() {
   const { menu, categories, getMenuByCategory, getCategoryName } = useRestaurant();
+  const { restaurant } = useAuth();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', description: '', price: '', category: categories[0]?.id || '', isVeg: true, isAvailable: true, prepTime: 10, calories: 0 });
 
   const filtered = useMemo(() => {
     let data = [...menu];
-    if (activeCategory !== 'all') data = data.filter(i => i.category === activeCategory);
-    if (search) data = data.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) || i.description.toLowerCase().includes(search.toLowerCase()));
+    if (activeCategory !== 'all') data = data.filter(i => i.categoryId === activeCategory);
+    if (search) data = data.filter(i => i.name.toLowerCase().includes(search.toLowerCase()) || (i.description || '').toLowerCase().includes(search.toLowerCase()));
     return data;
   }, [menu, activeCategory, search]);
 
   const openCreate = () => {
     setEditingItem(null);
     setForm({ name: '', description: '', price: '', category: categories[0]?.id || '', isVeg: true, isAvailable: true, prepTime: 10, calories: 0 });
+    setError('');
     setShowModal(true);
   };
 
   const openEdit = (item) => {
     setEditingItem(item);
-    setForm({ name: item.name, description: item.description, price: String(item.price), category: item.category, isVeg: item.isVeg, isAvailable: item.isAvailable, prepTime: item.prepTime, calories: item.calories });
+    setForm({
+      name: item.name,
+      description: item.description || '',
+      price: String(item.price),
+      category: item.categoryId,
+      isVeg: item.isVeg,
+      isAvailable: item.isAvailable,
+      prepTime: item.prepTime,
+      calories: item.calories,
+    });
+    setError('');
     setShowModal(true);
   };
 
-  const handleSave = () => {
-    if (!form.name || !form.price) return;
-    setShowModal(false);
+  const handleSave = async () => {
+    if (!form.name || !form.price) {
+      setError('Name and price are required');
+      return;
+    }
+    setSaving(true);
+    setError('');
+    try {
+      const payload = {
+        name: form.name,
+        description: form.description,
+        price: Math.round(Number(form.price) * 100), // Convert rupees to paise for backend
+        categoryId: form.category,
+        isVeg: form.isVeg,
+        isAvailable: form.isAvailable,
+        prepTime: Number(form.prepTime),
+        calories: Number(form.calories),
+        restaurantId: restaurant?.id,
+      };
+
+      if (editingItem) {
+        await updateMenuItem(editingItem.id, payload);
+      } else {
+        await createMenuItem(payload);
+      }
+
+      // Refresh menu by reloading the page data
+      window.location.reload();
+      setShowModal(false);
+    } catch (err) {
+      setError(err.message || 'Failed to save item');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const columns = [
@@ -53,8 +99,8 @@ export default function Menu() {
         </div>
       </div>
     )},
-    { header: 'Category', field: 'category', align: 'left', render: (row) => <span className="text-sm text-muted">{getCategoryName(row.category)}</span> },
-    { header: 'Price', field: 'price', align: 'right', render: (row) => <span className="text-sm font-mono">${row.price.toFixed(2)}</span> },
+    { header: 'Category', field: 'categoryId', align: 'left', render: (row) => <span className="text-sm text-muted">{getCategoryName(row.categoryId)}</span> },
+    { header: 'Price', field: 'price', align: 'right', render: (row) => <span className="text-sm font-mono">₹{row.price.toFixed(0)}</span> },
     { header: 'Prep', field: 'prepTime', align: 'center', render: (row) => `${row.prepTime}m` },
     { header: 'Calories', field: 'calories', align: 'right', render: (row) => `${row.calories} kcal` },
     { header: 'Status', field: 'isAvailable', align: 'center', render: (row) => <Badge variant={row.isAvailable ? 'success' : 'error'} size="sm" dot>{row.isAvailable ? 'Available' : 'Unavailable'}</Badge> },
@@ -102,14 +148,15 @@ export default function Menu() {
       <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingItem ? 'Edit Item' : 'Add Menu Item'} maxWidth="500px" footer={
         <div className="flex items-center justify-end gap-3">
           <Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button>
-          <Button variant="primary" onClick={handleSave}>Save</Button>
+          <Button variant="primary" onClick={handleSave} loading={saving}>Save</Button>
         </div>
       }>
         <div className="flex flex-col gap-4">
+          {error && <div className="text-sm text-error">{error}</div>}
           <Input label="Name" value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Item name" required />
           <Input label="Description" value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Short description" />
           <div className="grid grid-2 gap-4">
-            <Input label="Price ($)" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="0.00" required />
+            <Input label="Price (₹)" type="number" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} placeholder="0" required />
             <Input label="Prep Time (min)" type="number" value={form.prepTime} onChange={e => setForm({ ...form, prepTime: Number(e.target.value) })} placeholder="10" />
           </div>
           <div className="grid grid-2 gap-4">

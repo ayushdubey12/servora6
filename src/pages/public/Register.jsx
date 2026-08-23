@@ -51,7 +51,7 @@ export default function Register() {
             <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.01em' }}>Servora</span>
           </Link>
         </div>
-        <h2 className="text-center" style={{ fontSize: '28px', fontWeight: 800, color: 'var(--on-surface)', lineHeight: '36px', marginBottom: '8px' }}>
+        <h2 className="text-center" style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 600, color: 'var(--on-surface)', lineHeight: '36px', marginBottom: '8px' }}>
           Start your free trial
         </h2>
         <p className="text-center" style={{ color: 'var(--on-surface-variant)', fontSize: '16px', fontWeight: 500 }}>
@@ -63,7 +63,7 @@ export default function Register() {
       </div>
 
       <div className="w-full" style={{ maxWidth: '440px', marginTop: '32px' }}>
-        <div style={{ background: '#ffffff', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-2xl)', padding: '32px 24px', boxShadow: '0 20px 60px rgba(0,0,0,0.08), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 4px rgba(0,0,0,0.04)' }}>
+        <div style={{ background: '#ffffff', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', padding: '32px 24px', boxShadow: '0px 12px 32px rgba(0,0,0,0.04)' }}>
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <div className="grid grid-2 gap-4">
               <Input
@@ -140,6 +140,17 @@ export default function Register() {
               </Button>
             </div>
           </form>
+
+          <div className="mt-6">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full" style={{ borderTop: '1px solid var(--outline-variant)' }} />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="px-2" style={{ background: '#ffffff', color: 'var(--on-surface-variant)', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-sans)' }}>Email & password authentication</span>
+              </div>
+            </div>
+          </div>
         </div>
         <p className="text-center body-sm mt-6" style={{ color: 'var(--on-surface-variant)' }}>
           No credit card required. Cancel anytime.

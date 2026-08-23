@@ -1,22 +1,54 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { restaurant as mockRestaurant, branches, tables as mockTables, menuItems as mockMenu, categories as mockCategories } from '../data/mockData';
-import { supabase } from '../lib/supabase';
+import { getRestaurant, getCategories, getMenuItems, getTables, updateTable } from '../lib/api';
 
 const RestaurantContext = createContext(null);
 
-function normalizeItem(it) {
+function normalizeItem(item) {
   return {
-    ...it,
-    category: it.categoryId || it.category,
-    categoryId: it.category_id || it.categoryId,
-    isPopular: it.isPopular ?? false,
-    prepTime: it.prepTime ?? 15,
-    calories: it.calories ?? 0,
+    id: item.id,
+    name: item.name,
+    description: item.description,
+    price: item.price / 100, // Convert paise to rupees
+    categoryId: item.categoryId,
+    isVeg: item.isVeg,
+    isAvailable: item.isAvailable,
+    isPopular: item.isPopular,
+    prepTime: item.prepTime,
+    calories: item.calories,
+    imageUrl: item.imageUrl,
+    restaurantId: item.restaurantId,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+  };
+}
+
+function normalizeCategory(cat) {
+  return {
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    itemCount: cat.itemCount || 0,
+    order: cat.sortOrder,
+    restaurantId: cat.restaurantId,
+    createdAt: cat.createdAt,
+    updatedAt: cat.updatedAt,
+  };
+}
+
+function normalizeTable(table) {
+  return {
+    id: table.id,
+    number: table.number,
+    seats: table.seats,
+    status: table.status,
+    section: table.section,
+    restaurantId: table.restaurantId,
+    createdAt: table.createdAt,
+    updatedAt: table.updatedAt,
   };
 }
 
 function fromSnake(row) {
-  // Convert snake_case DB row to camelCase for the UI
   return {
     id: row.id,
     name: row.name,
@@ -25,75 +57,75 @@ function fromSnake(row) {
     phone: row.phone,
     email: row.email,
     address: row.address,
-    openingHours: row.opening_hours,
+    openingHours: row.openingHours || row.opening_hours,
     settings: row.settings,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
+    createdAt: row.createdAt || row.created_at,
+    updatedAt: row.updatedAt || row.updated_at,
   };
 }
 
 export function RestaurantProvider({ children }) {
-  const [restaurantData, setRestaurantData] = useState(mockRestaurant);
-  const [branchList] = useState(branches);
-  const [tableList, setTableList] = useState(mockTables);
-  const [menu, setMenu] = useState(mockMenu);
-  const [categoryList, setCategoryList] = useState(mockCategories);
+  const [restaurantData, setRestaurantData] = useState(null);
+  const [tableList, setTableList] = useState([]);
+  const [menu, setMenu] = useState([]);
+  const [categoryList, setCategoryList] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     async function load() {
       try {
-        const [rRes, cRes, mRes, tRes] = await Promise.all([
-          supabase.from('restaurants').select('*').limit(1).single().catch(() => null),
-          supabase.from('categories').select('*').order('sort_order', { ascending: true }).catch(() => null),
-          supabase.from('menu_items').select('*').order('created_at', { ascending: true }).catch(() => null),
-          supabase.from('tables').select('*').order('number', { ascending: true }).catch(() => null),
-        ]);
+        setLoading(true);
+
+        // Get the owner's restaurant from auth profile
+        const stored = JSON.parse(localStorage.getItem('servora-auth') || 'null');
+        const restaurantId = stored?.user?.restaurantId;
+
+        if (!restaurantId) {
+          if (!cancelled) setLoading(false);
+          return;
+        }
+
+        const restaurant = await getRestaurant(restaurantId);
         if (cancelled) return;
 
-        if (rRes?.data) {
-          setRestaurantData({ ...mockRestaurant, ...fromSnake(rRes.data) });
-        }
-        if (cRes?.data && mRes?.data && tRes?.data) {
-          const cats = cRes.data.map(c => ({
-            id: c.id,
-            name: c.name,
-            slug: c.slug,
-            itemCount: c.item_count,
-            order: c.sort_order,
-            restaurantId: c.restaurant_id,
-            createdAt: c.created_at,
-          }));
-          setCategoryList(cats);
+        if (restaurant) {
+          setRestaurantData(fromSnake(restaurant));
 
-          const items = mRes.data.map(normalizeItem);
-          setMenu(items);
+          // Load categories, menu, tables for this restaurant
+          const [cats, items, tables] = await Promise.all([
+            getCategories(restaurantId),
+            getMenuItems(restaurantId),
+            getTables(restaurantId),
+          ]);
 
-          const tables = tRes.data.map(t => ({
-            id: t.id,
-            number: t.number,
-            seats: t.seats,
-            status: t.status,
-            restaurantId: t.restaurant_id,
-            createdAt: t.created_at,
-          }));
-          setTableList(tables);
+          if (cancelled) return;
+
+          setCategoryList(cats.map(normalizeCategory));
+          setMenu(items.map(normalizeItem));
+          setTableList(tables.map(normalizeTable));
         }
-      } catch {
-        /* keep mock fallback */
+      } catch (error) {
+        console.error('[RestaurantContext] Failed to load data:', error);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
     load();
     return () => { cancelled = true; };
   }, []);
 
-  const updateTableStatus = useCallback((tableId, status) => {
+  const updateTableStatus = useCallback(async (tableId, status) => {
     setTableList(prev => prev.map(t => t.id === tableId ? { ...t, status } : t));
-    supabase.from('tables').update({ status }).eq('id', tableId).then(() => {}).catch(() => {});
+    try {
+      await updateTable(tableId, { status });
+    } catch (error) {
+      console.error('[updateTableStatus]', error);
+    }
   }, []);
 
   const getMenuByCategory = useCallback(
-    (categoryId) => menu.filter(item => (item.category || item.categoryId) === categoryId),
+    (categoryId) => menu.filter(item => item.categoryId === categoryId),
     [menu]
   );
   const getCategoryName = useCallback(
@@ -103,10 +135,14 @@ export function RestaurantProvider({ children }) {
 
   return (
     <RestaurantContext.Provider value={{
-      restaurant: restaurantData, branches: branchList,
-      tables: tableList, updateTableStatus,
-      menu, categories: categoryList,
-      getMenuByCategory, getCategoryName,
+      restaurant: restaurantData,
+      tables: tableList,
+      updateTableStatus,
+      menu,
+      categories: categoryList,
+      getMenuByCategory,
+      getCategoryName,
+      loading,
     }}>
       {children}
     </RestaurantContext.Provider>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { supabase } from '../../lib/supabase';
+import { getTableCount, getCategoryCount, getMenuItemCount } from '../../lib/api';
 import { useAuth } from '../../context/AuthContext';
 import { Icons } from '../../assets/icons';
 import Button from '../../components/ui/Button';
@@ -22,9 +22,9 @@ export default function Complete() {
         }
 
         const [tablesRes, categoriesRes, menuRes] = await Promise.all([
-          supabase.from('tables').select('id', { count: 'exact', head: true }).eq('restaurant_id', user.restaurantId),
-          supabase.from('categories').select('id', { count: 'exact', head: true }).eq('restaurant_id', user.restaurantId),
-          supabase.from('menu_items').select('id', { count: 'exact', head: true }).eq('restaurant_id', user.restaurantId),
+          getTableCount(user.restaurantId),
+          getCategoryCount(user.restaurantId),
+          getMenuItemCount(user.restaurantId),
         ]);
 
         setSummary({

@@ -119,8 +119,14 @@ export default function StaffOrders() {
 
   const claim = useCallback(async (orderId) => {
     setClaiming(c => ({ ...c, [orderId]: true }));
-    try { await claimOrder(orderId, user?.id); }
-    finally { setClaiming(c => ({ ...c, [orderId]: false })); }
+    try {
+      await claimOrder(orderId, user?.id);
+    } catch (err) {
+      console.error('[Staff Claim]', err);
+      alert(err.message || 'Failed to accept order. Please try again.');
+    } finally {
+      setClaiming(c => ({ ...c, [orderId]: false }));
+    }
   }, [claimOrder, user]);
 
   const release = useCallback(async (orderId) => {

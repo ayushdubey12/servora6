@@ -158,7 +158,7 @@ export default function Account() {
             <p className="account-stat-label">Upcoming visits</p>
           </div>
           <div className="account-stat">
-            <p className="account-stat-value">${(customer.totalSpent ?? 0).toFixed(0)}</p>
+            <p className="account-stat-value">₹{(customer.totalSpent ?? 0).toFixed(0)}</p>
             <p className="account-stat-label">Total spent</p>
           </div>
           <div className="account-stat">
@@ -228,7 +228,7 @@ export default function Account() {
                       <span className="account-order-points"><Icons.Gift size={12} /> +{o.pointsEarned} pts</span>
                     )}
                     {statusBadge(o.status, ORDER_STATUS)}
-                    <span className="account-order-total">${o.total?.toFixed(2)}</span>
+                    <span className="account-order-total">₹{o.total?.toFixed(0)}</span>
                   </div>
                 </div>
               ))}

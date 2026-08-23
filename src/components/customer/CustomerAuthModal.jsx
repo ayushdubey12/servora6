@@ -73,7 +73,7 @@ export default function CustomerAuthModal({ isOpen, onClose, onSuccess }) {
             <Icons.Gift size={22} />
           </div>
           <p className="customer-auth-hero-text">
-            Earn <strong>1 loyalty point per $1</strong> on every order, track your history, and book tables faster.
+            Earn <strong>1 loyalty point per ₹1</strong> on every order, track your history, and book tables faster.
           </p>
         </div>
 

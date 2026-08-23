@@ -42,12 +42,24 @@ export default function Reservations() {
   const filtered = useMemo(() => {
     return reservations
       .filter(r => filterStatus === 'all' || r.status === filterStatus)
-      .filter(r => filterDate === 'all' || r.date === filterDate)
-      .sort((a, b) => (a.date === b.date ? a.time.localeCompare(b.time) : a.date.localeCompare(b.date)));
+      .filter(r => {
+        if (filterDate === 'all') return true;
+        // date may be ISO string or Date — normalize to YYYY-MM-DD
+        const rDate = typeof r.date === 'string' ? r.date.slice(0, 10) : r.date?.toISOString?.()?.slice(0, 10);
+        return rDate === filterDate;
+      })
+      .sort((a, b) => {
+        const aDate = typeof a.date === 'string' ? a.date.slice(0, 10) : a.date?.toISOString?.()?.slice(0, 10) || '';
+        const bDate = typeof b.date === 'string' ? b.date.slice(0, 10) : b.date?.toISOString?.()?.slice(0, 10) || '';
+        return aDate === bDate ? (a.time || '').localeCompare(b.time || '') : aDate.localeCompare(bDate);
+      });
   }, [reservations, filterStatus, filterDate]);
 
   const stats = useMemo(() => {
-    const today = reservations.filter(r => r.date === filterDate);
+    const today = reservations.filter(r => {
+      const rDate = typeof r.date === 'string' ? r.date.slice(0, 10) : r.date?.toISOString?.()?.slice(0, 10);
+      return rDate === filterDate;
+    });
     return {
       todayCount: today.length,
       pending: reservations.filter(r => r.status === 'PENDING').length,
