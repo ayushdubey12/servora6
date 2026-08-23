@@ -345,7 +345,7 @@ app.post('/api/customer/login', asyncHandler(async (req, res) => {
   if (!ok) return res.status(401).json({ success: false, message: 'Invalid credentials' });
   return res.json({
     success: true,
-    data: { customer: { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone, points: customer.points, totalSpent: customer.totalSpent, visitCount: customer.visitCount }, token: 'dev-customer-token' },
+    data: { user: { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone, role: 'customer', points: customer.points, totalSpent: customer.totalSpent, visitCount: customer.visitCount }, token: 'dev-customer-token' },
   });
 }));
 
@@ -921,7 +921,7 @@ app.post('/api/auth/register-customer', asyncHandler(async (req, res) => {
   const customer = await prisma.customer.create({
     data: { name: parsed.data.name, email: parsed.data.email, phone: parsed.data.phone, password: pw, restaurantId: restaurant.id },
   });
-  return res.status(201).json({ success: true, data: { id: customer.id, name: customer.name, email: customer.email, points: customer.points, token: 'dev-customer-token' } });
+  return res.status(201).json({ success: true, data: { user: { id: customer.id, name: customer.name, email: customer.email, phone: customer.phone, role: 'customer' }, token: 'dev-customer-token' } });
 }));
 
 // ════════════════════════════════════════════════════════════════
@@ -1041,17 +1041,23 @@ app.get('/api/public/menu/:slug/item/:itemId', asyncHandler(async (req, res) => 
 
 app.post('/api/payments/create-order', asyncHandler(async (req, res) => {
   const { orderId } = req.body;
+  if (!orderId) return res.status(400).json({ success: false, message: 'orderId is required' });
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-    return res.status(500).json({ success: false, message: 'Razorpay keys not configured' });
+    return res.status(500).json({ success: false, message: 'Razorpay keys not configured on server' });
   }
-  const razorpayOrder = await razorpay.orders.create({
-    amount: Math.round(order.total * 100),
-    currency: 'INR',
-    receipt: orderId,
-  });
-  return res.json({ success: true, data: { razorpayOrderId: razorpayOrder.id, orderId: razorpayOrder.id, keyId: process.env.RAZORPAY_KEY_ID, amount: razorpayOrder.amount, currency: razorpayOrder.currency } });
+  try {
+    const razorpayOrder = await razorpay.orders.create({
+      amount: Math.round(order.total * 100),
+      currency: 'INR',
+      receipt: orderId,
+    });
+    return res.json({ success: true, data: { razorpayOrderId: razorpayOrder.id, orderId: razorpayOrder.id, keyId: process.env.RAZORPAY_KEY_ID, amount: razorpayOrder.amount, currency: razorpayOrder.currency } });
+  } catch (rpErr: any) {
+    console.error('[Razorpay] create-order failed:', rpErr?.error || rpErr?.message || rpErr);
+    return res.status(500).json({ success: false, message: `Razorpay error: ${rpErr?.error?.description || rpErr?.message || 'Unknown error'}` });
+  }
 }));
 
 app.post('/api/payments/verify', asyncHandler(async (req, res) => {

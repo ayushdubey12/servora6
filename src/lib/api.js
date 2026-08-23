@@ -348,6 +348,13 @@ export async function registerCustomer({ email, password, name, phone }) {
   });
 }
 
+export async function loginCustomer(email, password) {
+  return api('/api/customer/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+}
+
 // ============================================
 // Feedback / Reviews
 // ============================================

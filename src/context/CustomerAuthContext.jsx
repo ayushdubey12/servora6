@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { loginUser, getProfile, registerCustomer } from '../lib/api';
+import { loginUser, getProfile, registerCustomer, loginCustomer } from '../lib/api';
 
 const CustomerAuthContext = createContext(null);
 
@@ -36,18 +36,14 @@ export function CustomerAuthProvider({ children }) {
   };
 
   const login = async (email, password) => {
-    const data = await loginUser(email, password);
-
-    if (data.user.role !== 'customer') {
-      // Allow staff to also login as customer, but for customer auth we prefer customer role
-    }
+    const data = await loginCustomer(email, password);
 
     const customerData = {
       id: data.user.id,
       name: data.user.name,
       email: data.user.email,
       phone: data.user.phone,
-      restaurantId: data.user.restaurantId,
+      restaurantId: null,
     };
     persist({ customer: customerData, token: data.token });
     return customerData;
