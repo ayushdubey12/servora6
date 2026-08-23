@@ -20,6 +20,7 @@
     "jsonwebtoken": "^9.0.1",
     "prisma": "^5.22.0",
     "rate-limiter-flexible": "^5.0.1",
+    "razorpay": "^2.9.8",
     "socket.io": "^4.6.3",
     "zod": "^3.16.0"
   },

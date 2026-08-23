@@ -6,7 +6,14 @@ import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
 import { prisma } from './lib/prisma.js';
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID || '',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || '',
+});
 
 const app = express();
 const httpServer = createServer(app);
@@ -1036,12 +1043,31 @@ app.post('/api/payments/create-order', asyncHandler(async (req, res) => {
   const { orderId } = req.body;
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
-  const razorpayOrderId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  return res.json({ success: true, data: { razorpayOrderId, orderId: razorpayOrderId, keyId: process.env.RAZORPAY_KEY_ID || '', amount: Math.round(order.total * 100), currency: 'INR' } });
+  if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+    return res.status(500).json({ success: false, message: 'Razorpay keys not configured' });
+  }
+  const razorpayOrder = await razorpay.orders.create({
+    amount: Math.round(order.total * 100),
+    currency: 'INR',
+    receipt: orderId,
+  });
+  return res.json({ success: true, data: { razorpayOrderId: razorpayOrder.id, orderId: razorpayOrder.id, keyId: process.env.RAZORPAY_KEY_ID, amount: razorpayOrder.amount, currency: razorpayOrder.currency } });
 }));
 
 app.post('/api/payments/verify', asyncHandler(async (req, res) => {
-  const { orderId } = req.body;
+  const { orderId, razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+  if (!process.env.RAZORPAY_KEY_SECRET) {
+    return res.status(500).json({ success: false, message: 'Razorpay keys not configured' });
+  }
+  const body = razorpay_order_id + '|' + razorpay_payment_id;
+  const expectedSignature = crypto
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .update(body)
+    .digest('hex');
+  const isValid = expectedSignature === razorpay_signature;
+  if (!isValid) {
+    return res.status(400).json({ success: false, message: 'Payment signature verification failed' });
+  }
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
   await prisma.payment.create({ data: { orderId, amount: order.total, method: 'online', status: 'PAID' } });

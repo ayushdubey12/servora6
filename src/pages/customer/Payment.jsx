@@ -70,6 +70,7 @@ export default function Payment() {
         currency: razorpayOrderData.currency,
         name: restaurant?.name || 'Servora',
         description: `Payment for Order #${String(order.id).slice(0, 8)}`,
+        order_id: razorpayOrderData.razorpayOrderId,
         // Handler function — called on successful payment
         handler: async function (response) {
           // Step 3: Verify payment signature on backend
