@@ -10,16 +10,45 @@ import { prisma } from './lib/prisma.js';
 
 const app = express();
 const httpServer = createServer(app);
+
+const allowedOrigins = (process.env.CORS_ORIGIN || '')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+function isOriginAllowed(origin: string | undefined): boolean {
+  if (!origin) return true;
+  if (process.env.NODE_ENV !== 'production') {
+    return allowedOrigins.length === 0 || allowedOrigins.includes(origin);
+  }
+  return allowedOrigins.includes(origin);
+}
+
 const io = new SocketIOServer(httpServer, {
   cors: {
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     credentials: true,
   },
 });
 
 app.use(helmet({ contentSecurityPolicy: false }));
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:5173', credentials: true }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (isOriginAllowed(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 app.get('/health', (_req, res) => {
@@ -29,6 +58,10 @@ app.get('/health', (_req, res) => {
 function parseJsonValue(value: string | null | undefined) {
   if (!value) return {};
   try { return JSON.parse(value); } catch { return {}; }
+}
+
+function paramStr(val: unknown): string {
+  return Array.isArray(val) ? val[0] : String(val);
 }
 
 // Wrapper to catch async errors in Express 4 route handlers
@@ -432,14 +465,14 @@ app.post('/api/categories', asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/categories/:id', asyncHandler(async (req, res) => {
-  const cat = await prisma.category.findUnique({ where: { id: req.params.id } });
+  const cat = await prisma.category.findUnique({ where: { id: paramStr(req.params.id) } });
   if (!cat) return res.status(404).json({ success: false, message: 'Category not found' });
   const updated = await prisma.category.update({ where: { id: cat.id }, data: { name: req.body.name || cat.name, slug: req.body.slug || cat.slug } });
   return res.json({ success: true, data: updated });
 }));
 
 app.delete('/api/categories/:id', asyncHandler(async (req, res) => {
-  const cat = await prisma.category.findUnique({ where: { id: req.params.id } });
+  const cat = await prisma.category.findUnique({ where: { id: paramStr(req.params.id) } });
   if (!cat) return res.status(404).json({ success: false, message: 'Category not found' });
   await prisma.category.delete({ where: { id: cat.id } });
   return res.json({ success: true, data: { id: cat.id } });
@@ -462,14 +495,14 @@ app.post('/api/menu-items', asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/menu-items/:id', asyncHandler(async (req, res) => {
-  const item = await prisma.menuItem.findUnique({ where: { id: req.params.id } });
+  const item = await prisma.menuItem.findUnique({ where: { id: paramStr(req.params.id) } });
   if (!item) return res.status(404).json({ success: false, message: 'Menu item not found' });
   const updated = await prisma.menuItem.update({ where: { id: item.id }, data: req.body });
   return res.json({ success: true, data: updated });
 }));
 
 app.delete('/api/menu-items/:id', asyncHandler(async (req, res) => {
-  const item = await prisma.menuItem.findUnique({ where: { id: req.params.id } });
+  const item = await prisma.menuItem.findUnique({ where: { id: paramStr(req.params.id) } });
   if (!item) return res.status(404).json({ success: false, message: 'Menu item not found' });
   await prisma.menuItem.delete({ where: { id: item.id } });
   return res.json({ success: true, data: { id: item.id } });
@@ -494,14 +527,14 @@ app.post('/api/tables', asyncHandler(async (req, res) => {
 }));
 
 app.put('/api/tables/:id', asyncHandler(async (req, res) => {
-  const table = await prisma.table.findUnique({ where: { id: req.params.id } });
+  const table = await prisma.table.findUnique({ where: { id: paramStr(req.params.id) } });
   if (!table) return res.status(404).json({ success: false, message: 'Table not found' });
   const updated = await prisma.table.update({ where: { id: table.id }, data: req.body });
   return res.json({ success: true, data: updated });
 }));
 
 app.delete('/api/tables/:id', asyncHandler(async (req, res) => {
-  const table = await prisma.table.findUnique({ where: { id: req.params.id } });
+  const table = await prisma.table.findUnique({ where: { id: paramStr(req.params.id) } });
   if (!table) return res.status(404).json({ success: false, message: 'Table not found' });
   await prisma.table.delete({ where: { id: table.id } });
   return res.json({ success: true, data: { id: table.id } });
@@ -520,7 +553,7 @@ app.get('/api/orders', asyncHandler(async (_req, res) => {
 }));
 
 app.get('/api/orders/:id', asyncHandler(async (req, res) => {
-  const order = await prisma.order.findUnique({ where: { id: req.params.id }, include: { items: true } });
+  const order = await prisma.order.findUnique({ where: { id: paramStr(req.params.id) }, include: { items: true } });
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
   return res.json({ success: true, data: order });
 }));
@@ -599,7 +632,7 @@ app.post('/api/orders', asyncHandler(async (req, res) => {
 
 app.put('/api/orders/:id/status', asyncHandler(async (req, res) => {
   try {
-    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    const order = await prisma.order.findUnique({ where: { id: paramStr(req.params.id) } });
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
 
     const allowed = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY', 'SERVED', 'PAYMENT_PENDING', 'PAID', 'COMPLETED', 'CANCELLED'];
@@ -660,12 +693,12 @@ app.post('/api/waiters', asyncHandler(async (req, res) => {
 }));
 
 app.delete('/api/waiters/:id', asyncHandler(async (req, res) => {
-  const user = await prisma.user.findUnique({ where: { id: req.params.id } });
+  const user = await prisma.user.findUnique({ where: { id: paramStr(req.params.id) } });
   if (!user) return res.status(404).json({ success: false, message: 'Staff member not found' });
   if (user.role === 'owner') return res.status(400).json({ success: false, message: 'Cannot remove the owner' });
-  await prisma.order.updateMany({ where: { claimedById: req.params.id }, data: { claimedById: null } });
-  await prisma.user.delete({ where: { id: req.params.id } });
-  return res.json({ success: true, data: { id: req.params.id } });
+  await prisma.order.updateMany({ where: { claimedById: paramStr(req.params.id) }, data: { claimedById: null } });
+  await prisma.user.delete({ where: { id: paramStr(req.params.id) } });
+  return res.json({ success: true, data: { id: paramStr(req.params.id) } });
 }));
 
 // ── Order claiming ──
@@ -674,7 +707,7 @@ app.put('/api/orders/:id/claim', asyncHandler(async (req, res) => {
     const schema = z.object({ waiterId: z.string().min(1) });
     const parsed = schema.safeParse(req.body);
     if (!parsed.success) return res.status(400).json({ success: false, message: 'waiterId is required' });
-    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    const order = await prisma.order.findUnique({ where: { id: paramStr(req.params.id) } });
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
     if (order.claimedById && order.claimedById !== parsed.data.waiterId) {
       return res.status(409).json({ success: false, message: 'Order already claimed by another waiter' });
@@ -693,7 +726,7 @@ app.put('/api/orders/:id/claim', asyncHandler(async (req, res) => {
 
 app.put('/api/orders/:id/release', asyncHandler(async (req, res) => {
   try {
-    const order = await prisma.order.findUnique({ where: { id: req.params.id } });
+    const order = await prisma.order.findUnique({ where: { id: paramStr(req.params.id) } });
     if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
     const updated = await prisma.order.update({
       where: { id: order.id },
@@ -760,7 +793,7 @@ app.post('/api/reservations', asyncHandler(async (req, res) => {
 
 app.put('/api/reservations/:id/status', asyncHandler(async (req, res) => {
   try {
-    const reservation = await prisma.reservation.findUnique({ where: { id: req.params.id } });
+    const reservation = await prisma.reservation.findUnique({ where: { id: paramStr(req.params.id) } });
     if (!reservation) return res.status(404).json({ success: false, message: 'Reservation not found' });
     const updated = await prisma.reservation.update({ where: { id: reservation.id }, data: { status: req.body.status } });
     return res.json({ success: true, data: updated });
@@ -831,7 +864,7 @@ async function startServer() {
   await prisma.$connect();
   await seedDefaultData();
   const port = Number(process.env.PORT || 5000);
-  httpServer.listen(port, () => {
+  httpServer.listen(port, '0.0.0.0', () => {
     console.log(`SERVORA backend listening on port ${port}`);
   });
 }

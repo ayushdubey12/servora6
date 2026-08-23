@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["multiSchema"]
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  schemas  = ["public", "auth"]
 }
 
 model Restaurant {
@@ -26,19 +28,23 @@ model Restaurant {
   orders       Order[]
   customers    Customer[]
   reservations Reservation[]
+
+  @@schema("public")
 }
 
 model User {
-  id           String      @id @default(cuid())
-  name         String
-  email        String      @unique
-  password     String
-  role         String      @default("owner")
-  restaurantId String?
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
-  claimedOrders Order[]    @relation("ClaimedBy")
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id            String      @id @default(cuid())
+  name          String
+  email         String      @unique
+  password      String
+  role          String      @default("owner")
+  restaurantId  String?
+  restaurant    Restaurant? @relation(fields: [restaurantId], references: [id])
+  claimedOrders Order[]     @relation("ClaimedBy")
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@schema("public")
 }
 
 model Category {
@@ -54,22 +60,25 @@ model Category {
   updatedAt    DateTime   @updatedAt
 
   @@unique([restaurantId, slug])
+  @@schema("public")
 }
 
 model MenuItem {
-  id            String      @id @default(cuid())
-  name          String
-  description   String
-  price         Float
-  isVeg         Boolean     @default(true)
-  isAvailable   Boolean     @default(true)
-  restaurantId  String
-  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
-  categoryId    String
-  category      Category    @relation(fields: [categoryId], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  orderItems    OrderItem[] @relation("MenuItemOrders")
+  id           String      @id @default(cuid())
+  name         String
+  description  String
+  price        Float
+  isVeg        Boolean     @default(true)
+  isAvailable  Boolean     @default(true)
+  restaurantId String
+  restaurant   Restaurant  @relation(fields: [restaurantId], references: [id])
+  categoryId   String
+  category     Category    @relation(fields: [categoryId], references: [id])
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  orderItems   OrderItem[] @relation("MenuItemOrders")
+
+  @@schema("public")
 }
 
 model Table {
@@ -83,6 +92,7 @@ model Table {
   updatedAt    DateTime   @updatedAt
 
   @@unique([restaurantId, number])
+  @@schema("public")
 }
 
 model Order {
@@ -105,30 +115,36 @@ model Order {
   updatedAt     DateTime    @updatedAt
   items         OrderItem[]
   payments      Payment[]
+
+  @@schema("public")
 }
 
 model OrderItem {
-  id         String    @id @default(cuid())
-  orderId    String
-  order      Order     @relation(fields: [orderId], references: [id])
-  itemId     String?
-  menuItem   MenuItem? @relation("MenuItemOrders", fields: [itemId], references: [id])
-  name       String    @default("Item")
-  quantity   Int
-  price      Float
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id        String    @id @default(cuid())
+  orderId   String
+  order     Order     @relation(fields: [orderId], references: [id])
+  itemId    String?
+  menuItem  MenuItem? @relation("MenuItemOrders", fields: [itemId], references: [id])
+  name      String    @default("Item")
+  quantity  Int
+  price     Float
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@schema("public")
 }
 
 model Payment {
-  id         String   @id @default(cuid())
-  orderId    String
-  order      Order    @relation(fields: [orderId], references: [id])
-  amount     Float
-  method     String
-  status     String
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  amount    Float
+  method    String
+  status    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@schema("public")
 }
 
 model Customer {
@@ -146,6 +162,8 @@ model Customer {
   updatedAt    DateTime      @updatedAt
   orders       Order[]
   reservations Reservation[]
+
+  @@schema("public")
 }
 
 model Reservation {
@@ -158,10 +176,12 @@ model Reservation {
   phone        String?
   email        String?
   partySize    Int
-  date         String // YYYY-MM-DD
-  time         String // HH:mm
+  date         String
+  time         String
   notes        String?
-  status       String     @default("PENDING") // PENDING, CONFIRMED, CANCELLED, COMPLETED, NO_SHOW
+  status       String     @default("PENDING")
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+
+  @@schema("public")
 }
