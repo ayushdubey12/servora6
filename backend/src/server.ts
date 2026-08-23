@@ -1037,7 +1037,7 @@ app.post('/api/payments/create-order', asyncHandler(async (req, res) => {
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
   const razorpayOrderId = `order_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-  return res.json({ success: true, data: { razorpayOrderId, amount: Math.round(order.total * 100), currency: 'INR' } });
+  return res.json({ success: true, data: { razorpayOrderId, orderId: razorpayOrderId, keyId: process.env.RAZORPAY_KEY_ID || '', amount: Math.round(order.total * 100), currency: 'INR' } });
 }));
 
 app.post('/api/payments/verify', asyncHandler(async (req, res) => {

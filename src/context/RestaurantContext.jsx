@@ -8,7 +8,7 @@ function normalizeItem(item) {
     id: item.id,
     name: item.name,
     description: item.description,
-    price: item.price / 100, // Convert paise to rupees
+    price: item.price,
     categoryId: item.categoryId,
     isVeg: item.isVeg,
     isAvailable: item.isAvailable,
@@ -28,7 +28,7 @@ function normalizeCategory(cat) {
     name: cat.name,
     slug: cat.slug,
     itemCount: cat.itemCount || 0,
-    order: cat.sortOrder,
+    order: cat.order,
     restaurantId: cat.restaurantId,
     createdAt: cat.createdAt,
     updatedAt: cat.updatedAt,
