@@ -104,6 +104,10 @@ export async function getDashboardStats() {
   return api('/api/auth/dashboard-stats');
 }
 
+export async function getWaiterStats() {
+  return api('/api/stats/waiters');
+}
+
 // ============================================
 // Restaurants
 // ============================================

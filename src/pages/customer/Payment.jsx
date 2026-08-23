@@ -70,7 +70,6 @@ export default function Payment() {
         currency: razorpayOrderData.currency,
         name: restaurant?.name || 'Servora',
         description: `Payment for Order #${String(order.id).slice(0, 8)}`,
-        order_id: razorpayOrderData.orderId,
         // Handler function — called on successful payment
         handler: async function (response) {
           // Step 3: Verify payment signature on backend
@@ -83,7 +82,7 @@ export default function Payment() {
               orderId: order.id,
             });
 
-            if (verifyResult.success) {
+            if (verifyResult.verified) {
               setPaymentStatus('success');
             } else {
               setError('Payment verification failed. Please contact support.');

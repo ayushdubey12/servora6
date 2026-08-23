@@ -6,7 +6,7 @@ import { Icons } from '../../assets/icons';
 import { useOrders } from '../../context/OrderContext';
 import { useRestaurant } from '../../context/RestaurantContext';
 import { useAuth } from '../../context/AuthContext';
-import { getDashboardStats } from '../../lib/api';
+import { getWaiterStats } from '../../lib/api';
 
 export default function Dashboard() {
   const { orders } = useOrders();
@@ -17,8 +17,8 @@ export default function Dashboard() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const stats = await getDashboardStats();
-        setWaiterStats(stats || []);
+        const stats = await getWaiterStats();
+        setWaiterStats(Array.isArray(stats) ? stats : []);
       } catch {
         setWaiterStats([]);
       }

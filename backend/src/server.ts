@@ -1041,7 +1041,7 @@ app.post('/api/payments/create-order', asyncHandler(async (req, res) => {
 }));
 
 app.post('/api/payments/verify', asyncHandler(async (req, res) => {
-  const { orderId, razorpay_payment_id } = req.body;
+  const { orderId } = req.body;
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
   await prisma.payment.create({ data: { orderId, amount: order.total, method: 'online', status: 'PAID' } });
