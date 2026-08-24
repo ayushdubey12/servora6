@@ -209,33 +209,10 @@ const publicRestaurantFields = {
 };
 
 // ════════════════════════════════════════════════════════════════
-//  SEED: Hotel Siraj (menu/table data only — NO demo accounts)
+//  SEED: Hotel Siraj demo content (idempotent + self-healing)
 // ════════════════════════════════════════════════════════════════
-async function seedDefaultData() {
-  const existing = await prisma.restaurant.findFirst();
-  if (existing) return existing;
 
-  const restaurant = await prisma.restaurant.create({
-    data: {
-      name: 'Hotel Siraj',
-      slug: 'hotel-siraj',
-      description: 'Authentic Hyderabadi and North Indian cuisine since 1986. Legendary Biryani, rich curries, and traditional tandoor delicacies.',
-      phone: '+91 40 2345 6789',
-      email: 'info@hotelsiraj.in',
-      address: '42-58, Masab Tank, Abids, Hyderabad, Telangana 500028',
-      openingHours: JSON.stringify({
-        mon: { open: '11:00', close: '23:00' },
-        tue: { open: '11:00', close: '23:00' },
-        wed: { open: '11:00', close: '23:00' },
-        thu: { open: '11:00', close: '23:00' },
-        fri: { open: '11:00', close: '23:30' },
-        sat: { open: '11:00', close: '23:30' },
-        sun: { open: '10:00', close: '23:00' },
-      }),
-      settings: JSON.stringify({}),
-    },
-  });
-
+async function seedRestaurantContent(restaurantId: string) {
   // ── Categories ──
   const catData = [
     { name: 'Starters', slug: 'starters', order: 1 },
@@ -247,9 +224,16 @@ async function seedDefaultData() {
     { name: 'Desserts', slug: 'desserts', order: 7 },
     { name: 'Beverages', slug: 'beverages', order: 8 },
   ];
-  const cats = await Promise.all(catData.map(c => prisma.category.create({
-    data: { ...c, itemCount: 0, restaurantId: restaurant.id },
-  })));
+  const cats: { id: string }[] = [];
+  for (const c of catData) {
+    const existing = await prisma.category.findUnique({
+      where: { restaurantId_slug: { restaurantId, slug: c.slug } },
+    });
+    if (existing) { cats.push(existing); continue; }
+    cats.push(await prisma.category.create({
+      data: { ...c, itemCount: 0, restaurantId },
+    }));
+  }
   const [starter, biryani, tandoor, curry, bread, rice, dessert, beverage] = cats;
 
   // ── Menu Items (₹ pricing) ──
@@ -301,13 +285,12 @@ async function seedDefaultData() {
     { name: 'Rooh Afza', description: 'Classic rose and herb syrup blended with chilled milk', price: 60, categoryId: beverage.id, isVeg: true },
   ];
 
-  await prisma.menuItem.createMany({
-    data: items.map(item => ({
-      ...item,
-      restaurantId: restaurant.id,
-      isAvailable: true,
-    })),
-  });
+  const existingItems = await prisma.menuItem.count({ where: { restaurantId } });
+  if (existingItems === 0) {
+    await prisma.menuItem.createMany({
+      data: items.map(item => ({ ...item, restaurantId, isAvailable: true })),
+    });
+  }
 
   for (const cat of cats) {
     const count = await prisma.menuItem.count({ where: { categoryId: cat.id } });
@@ -315,29 +298,66 @@ async function seedDefaultData() {
   }
 
   // ── Tables ──
-  const tableSeed = [
-    { number: 1, seats: 2, status: 'available' },
-    { number: 2, seats: 2, status: 'available' },
-    { number: 3, seats: 4, status: 'occupied' },
-    { number: 4, seats: 4, status: 'available' },
-    { number: 5, seats: 4, status: 'available' },
-    { number: 6, seats: 6, status: 'reserved' },
-    { number: 7, seats: 6, status: 'available' },
-    { number: 8, seats: 2, status: 'occupied' },
-    { number: 9, seats: 4, status: 'available' },
-    { number: 10, seats: 8, status: 'available' },
-    { number: 11, seats: 2, status: 'available' },
-    { number: 12, seats: 4, status: 'cleaning' },
-    { number: 13, seats: 6, status: 'available' },
-    { number: 14, seats: 2, status: 'available' },
-    { number: 15, seats: 10, status: 'available' },
-  ];
+  const existingTables = await prisma.table.count({ where: { restaurantId } });
+  if (existingTables === 0) {
+    const tableSeed = [
+      { number: 1, seats: 2 }, { number: 2, seats: 2 }, { number: 3, seats: 4 },
+      { number: 4, seats: 4 }, { number: 5, seats: 4 }, { number: 6, seats: 6 },
+      { number: 7, seats: 6 }, { number: 8, seats: 2 }, { number: 9, seats: 4 },
+      { number: 10, seats: 8 }, { number: 11, seats: 2 }, { number: 12, seats: 4 },
+      { number: 13, seats: 6 }, { number: 14, seats: 2 }, { number: 15, seats: 10 },
+    ];
+    for (const t of tableSeed) {
+      await prisma.table.create({ data: { ...t, status: 'available', restaurantId } });
+    }
+  }
+}
 
-  await prisma.table.createMany({
-    data: tableSeed.map(t => ({ ...t, restaurantId: restaurant.id })),
+async function seedDefaultData() {
+  const existing = await prisma.restaurant.findFirst();
+  if (existing) return existing;
+
+  const restaurant = await prisma.restaurant.create({
+    data: {
+      name: 'Hotel Siraj',
+      slug: 'hotel-siraj',
+      description: 'Authentic Hyderabadi and North Indian cuisine since 1986. Legendary Biryani, rich curries, and traditional tandoor delicacies.',
+      phone: '+91 40 2345 6789',
+      email: 'info@hotelsiraj.in',
+      address: '42-58, Masab Tank, Abids, Hyderabad, Telangana 500028',
+      openingHours: JSON.stringify({
+        mon: { open: '11:00', close: '23:00' },
+        tue: { open: '11:00', close: '23:00' },
+        wed: { open: '11:00', close: '23:00' },
+        thu: { open: '11:00', close: '23:00' },
+        fri: { open: '11:00', close: '23:30' },
+        sat: { open: '11:00', close: '23:30' },
+        sun: { open: '10:00', close: '23:00' },
+      }),
+      settings: JSON.stringify({}),
+    },
   });
 
+  await seedRestaurantContent(restaurant.id);
   return restaurant;
+}
+
+// Self-healing: if the primary restaurant exists but has NO categories,
+// NO menu items AND NO tables (a wiped/broken state), restore demo content.
+// Restaurants with any existing content are left untouched — intentional
+// deletions by the owner are never undone.
+async function healEmptyRestaurant() {
+  const restaurant = await prisma.restaurant.findFirst();
+  if (!restaurant) return;
+  const [cats, items, tables] = await Promise.all([
+    prisma.category.count({ where: { restaurantId: restaurant.id } }),
+    prisma.menuItem.count({ where: { restaurantId: restaurant.id } }),
+    prisma.table.count({ where: { restaurantId: restaurant.id } }),
+  ]);
+  if (cats === 0 && items === 0 && tables === 0) {
+    console.log('[SEED] Restaurant exists but has no menu/tables — restoring demo content');
+    await seedRestaurantContent(restaurant.id);
+  }
 }
 
 // ── One-time rotation of publicly-leaked default credentials ────
@@ -781,16 +801,23 @@ app.post('/api/categories', requireAuth('staff'), limit(writeLimiter), asyncHand
   if (!parsed.success) return res.status(400).json({ success: false, message: 'Validation failed' });
   const rid = requireStaffRestaurant(req, res);
   if (!rid) return;
-  const newCat = await prisma.category.create({
-    data: {
-      name: parsed.data.name,
-      slug: parsed.data.slug || parsed.data.name.toLowerCase().replace(/\s+/g, '-'),
-      itemCount: 0,
-      order: (await prisma.category.count({ where: { restaurantId: rid } })) + 1,
-      restaurantId: rid,
-    },
-  });
-  return res.status(201).json({ success: true, data: newCat });
+  try {
+    const newCat = await prisma.category.create({
+      data: {
+        name: parsed.data.name,
+        slug: parsed.data.slug || parsed.data.name.toLowerCase().replace(/\s+/g, '-'),
+        itemCount: 0,
+        order: (await prisma.category.count({ where: { restaurantId: rid } })) + 1,
+        restaurantId: rid,
+      },
+    });
+    return res.status(201).json({ success: true, data: newCat });
+  } catch (err: any) {
+    if (err?.code === 'P2002') {
+      return res.status(409).json({ success: false, message: 'A category with this name already exists' });
+    }
+    throw err;
+  }
 }));
 
 app.put('/api/categories/:id', requireAuth('staff'), asyncHandler(async (req, res) => {
@@ -939,10 +966,17 @@ app.post('/api/tables', requireAuth('staff'), limit(writeLimiter), asyncHandler(
   if (!parsed.success) return res.status(400).json({ success: false, message: 'Validation failed' });
   const rid = requireStaffRestaurant(req, res);
   if (!rid) return;
-  const table = await prisma.table.create({
-    data: { number: parsed.data.number, seats: parsed.data.seats, status: 'available', restaurantId: rid },
-  });
-  return res.status(201).json({ success: true, data: table });
+  try {
+    const table = await prisma.table.create({
+      data: { number: parsed.data.number, seats: parsed.data.seats, status: 'available', restaurantId: rid },
+    });
+    return res.status(201).json({ success: true, data: table });
+  } catch (err: any) {
+    if (err?.code === 'P2002') {
+      return res.status(409).json({ success: false, message: `Table #${parsed.data.number} already exists. Pick a different number.` });
+    }
+    throw err;
+  }
 }));
 
 app.put('/api/tables/:id', requireAuth('staff'), asyncHandler(async (req, res) => {
@@ -1567,6 +1601,7 @@ process.on('uncaughtException', (err) => {
 async function startServer() {
   await prisma.$connect();
   await seedDefaultData();
+  await healEmptyRestaurant();
   await rotateSeededCredentials();
   const port = Number(process.env.PORT || 5000);
   httpServer.listen(port, '0.0.0.0', () => {

@@ -10,7 +10,7 @@ import { useRestaurant } from '../../context/RestaurantContext';
 import { createTable, deleteTable } from '../../lib/api';
 
 export default function Tables() {
-  const { tables, updateTableStatus, restaurant } = useRestaurant();
+  const { tables, updateTableStatus, restaurant, refresh } = useRestaurant();
   const [search, setSearch] = useState('');
   const [filterSection, setFilterSection] = useState('all');
   const [selectedTable, setSelectedTable] = useState(null);
@@ -56,9 +56,8 @@ export default function Tables() {
         status: form.status || 'available',
         restaurantId: restaurant?.id,
       });
-      // Reload by refreshing the page data
-      window.location.reload();
       setShowAddModal(false);
+      await refresh();
     } catch (err) {
       setError(err.message || 'Failed to add table');
     } finally {
@@ -70,7 +69,7 @@ export default function Tables() {
     if (!window.confirm('Delete this table? This cannot be undone.')) return;
     try {
       await deleteTable(tableId);
-      window.location.reload();
+      await refresh();
     } catch (err) {
       console.error('Failed to delete table:', err);
     }

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getRestaurant, getCategories, getMenuItems, getTables, updateTable } from '../lib/api';
+import { useAuth } from './AuthContext';
 
 const RestaurantContext = createContext(null);
 
@@ -65,55 +66,60 @@ function fromSnake(row) {
 }
 
 export function RestaurantProvider({ children }) {
+  const { isAuthenticated, user } = useAuth();
   const [restaurantData, setRestaurantData] = useState(null);
   const [tableList, setTableList] = useState([]);
   const [menu, setMenu] = useState([]);
   const [categoryList, setCategoryList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        setLoading(true);
-
-        // Get the owner's restaurant from auth profile
-        const stored = JSON.parse(localStorage.getItem('servora-auth') || 'null');
-        const restaurantId = stored?.user?.restaurantId;
-
-        if (!restaurantId) {
-          if (!cancelled) setLoading(false);
-          return;
-        }
-
-        const restaurant = await getRestaurant(restaurantId);
-        if (cancelled) return;
-
-        if (restaurant) {
-          setRestaurantData(fromSnake(restaurant));
-
-          // Load categories, menu, tables for this restaurant
-          const [cats, items, tables] = await Promise.all([
-            getCategories(restaurantId),
-            getMenuItems(restaurantId),
-            getTables(restaurantId),
-          ]);
-
-          if (cancelled) return;
-
-          setCategoryList(cats.map(normalizeCategory));
-          setMenu(items.map(normalizeItem));
-          setTableList(tables.map(normalizeTable));
-        }
-      } catch (error) {
-        console.error('[RestaurantContext] Failed to load data:', error);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => { cancelled = true; };
+  const clear = useCallback(() => {
+    setRestaurantData(null);
+    setTableList([]);
+    setMenu([]);
+    setCategoryList([]);
+    setError('');
   }, []);
+
+  const refresh = useCallback(async () => {
+    if (!isAuthenticated || !user?.restaurantId) {
+      clear();
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const rid = user.restaurantId;
+      const restaurant = await getRestaurant(rid);
+      if (!restaurant) throw new Error('Restaurant not found');
+      setRestaurantData(fromSnake(restaurant));
+
+      const [cats, items, tables] = await Promise.all([
+        getCategories(rid),
+        getMenuItems(rid),
+        getTables(rid),
+      ]);
+
+      setCategoryList((Array.isArray(cats) ? cats : []).map(normalizeCategory));
+      setMenu((Array.isArray(items) ? items : []).map(normalizeItem));
+      setTableList((Array.isArray(tables) ? tables : []).map(normalizeTable));
+    } catch (err) {
+      console.error('[RestaurantContext] Failed to load data:', err);
+      setError(err.message || 'Failed to load restaurant data');
+      // A 401 here means the session expired — AuthContext hydrate/logout will handle clearing it.
+    } finally {
+      setLoading(false);
+    }
+  }, [isAuthenticated, user?.restaurantId, clear]);
+
+  // Reload whenever auth state resolves or the signed-in user changes.
+  // This fixes the class of bugs where lists stayed empty after login/deploy
+  // because the context only read localStorage once on mount.
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const updateTableStatus = useCallback(async (tableId, status) => {
     setTableList(prev => prev.map(t => t.id === tableId ? { ...t, status } : t));
@@ -121,8 +127,9 @@ export function RestaurantProvider({ children }) {
       await updateTable(tableId, { status });
     } catch (error) {
       console.error('[updateTableStatus]', error);
+      refresh();
     }
-  }, []);
+  }, [refresh]);
 
   const getMenuByCategory = useCallback(
     (categoryId) => menu.filter(item => item.categoryId === categoryId),
@@ -143,6 +150,8 @@ export function RestaurantProvider({ children }) {
       getMenuByCategory,
       getCategoryName,
       loading,
+      error,
+      refresh,
     }}>
       {children}
     </RestaurantContext.Provider>
