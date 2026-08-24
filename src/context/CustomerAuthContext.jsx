@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { loginUser, getProfile, registerCustomer, loginCustomer } from '../lib/api';
+import { getProfile, registerCustomer, loginCustomer, getCustomerProfile } from '../lib/api';
 
 const CustomerAuthContext = createContext(null);
 
@@ -80,15 +80,14 @@ export function CustomerAuthProvider({ children }) {
       const stored = JSON.parse(localStorage.getItem('servora-customer') || 'null');
       if (!stored?.customer?.id) return;
 
-      const profile = await getProfile();
-      const enriched = {
-        id: profile.user.id,
-        name: profile.user.name,
-        email: profile.user.email,
-        phone: profile.user.phone,
+      const profile = await getCustomerProfile();
+      const fullCustomer = {
+        id: profile.id,
+        name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        points: profile.points,
       };
-
-      const fullCustomer = { ...enriched };
       setCustomer(fullCustomer);
       localStorage.setItem('servora-customer', JSON.stringify({ customer: fullCustomer, token }));
       return fullCustomer;

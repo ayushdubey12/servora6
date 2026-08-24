@@ -355,6 +355,10 @@ export async function loginCustomer(email, password) {
   });
 }
 
+export async function getCustomerProfile() {
+  return api('/api/customer/me');
+}
+
 // ============================================
 // Feedback / Reviews
 // ============================================

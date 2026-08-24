@@ -111,6 +111,7 @@ model Order {
   customerId    String?
   customer      Customer?   @relation(fields: [customerId], references: [id])
   pointsEarned  Int         @default(0)
+  razorpayOrderId String?   @unique
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   items         OrderItem[]
