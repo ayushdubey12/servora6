@@ -1372,6 +1372,23 @@ app.put('/api/restaurants/:id', requireAuth('staff'), requireRole('owner'), asyn
   const restaurant = await prisma.restaurant.findUnique({ where: { id: rid } });
   if (!restaurant) return res.status(404).json({ success: false, message: 'Restaurant not found' });
   const str = (v: unknown, fb: string | null) => (typeof v === 'string' && v.trim() ? v.slice(0, 300) : (fb ?? undefined));
+  const settings = parseJsonValue(restaurant.settings) as Record<string, any>;
+  let settingsChanged = false;
+  if (req.body.upiVpa !== undefined || req.body.upiPayeeName !== undefined) {
+    const vpa = typeof req.body.upiVpa === 'string' && /^[\w.\-]{2,64}@[a-zA-Z]{2,32}$/.test(req.body.upiVpa.trim())
+      ? req.body.upiVpa.trim() : null;
+    if (req.body.upiVpa !== undefined && !vpa) {
+      return res.status(400).json({ success: false, message: 'Invalid UPI ID format' });
+    }
+    settings.upi = {
+      ...(settings.upi || {}),
+      vpa: vpa ?? (settings.upi?.vpa ?? null),
+      payeeName: typeof req.body.upiPayeeName === 'string' && req.body.upiPayeeName.trim()
+        ? req.body.upiPayeeName.trim().slice(0, 50)
+        : (settings.upi?.payeeName ?? restaurant.name),
+    };
+    settingsChanged = true;
+  }
   const updated = await prisma.restaurant.update({
     where: { id: rid },
     data: {
@@ -1380,6 +1397,7 @@ app.put('/api/restaurants/:id', requireAuth('staff'), requireRole('owner'), asyn
       phone: str(req.body.phone, restaurant.phone),
       email: str(req.body.email, restaurant.email),
       address: str(req.body.address, restaurant.address),
+      ...(settingsChanged ? { settings: JSON.stringify(settings) } : {}),
     },
   });
   res.json({ success: true, data: updated });
@@ -1516,6 +1534,204 @@ app.post('/api/payments/verify', limit(writeLimiter), asyncHandler(async (req, r
   await prisma.order.update({ where: { id: order.id }, data: { paymentStatus: 'PAID', status: 'COMPLETED' } });
   emitToRestaurant(order.restaurantId, 'payment:update', { orderId: order.id, status: 'PAID' });
   return res.json({ success: true, data: { verified: true } });
+}));
+
+// ════════════════════════════════════════════════════════════════
+//  DIRECT UPI (BHIM) — gateway-free payments with notification relay
+// ════════════════════════════════════════════════════════════════
+
+const UPI_SHORT_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no I,L,O,0,1
+const UPI_INTENT_TTL_MS = 30 * 60 * 1000;      // intent reuse window
+const UPI_MATCH_WINDOW_MS = 20 * 60 * 1000;    // webhook matching window
+
+function upiPaise(orderId: string): number {
+  return crypto.createHash('sha1').update(orderId).digest()[0] % 100;
+}
+
+function randomShortCode(): string {
+  let code = '';
+  const bytes = crypto.randomBytes(6);
+  for (let i = 0; i < 6; i++) code += UPI_SHORT_ALPHABET[bytes[i] % UPI_SHORT_ALPHABET.length];
+  return code;
+}
+
+async function upiSettingsFor(restaurantId: string): Promise<{ vpa: string; payeeName: string } | null> {
+  const restaurant = await prisma.restaurant.findUnique({ where: { id: restaurantId } });
+  if (!restaurant) return null;
+  const settings = parseJsonValue(restaurant.settings) as { upi?: { vpa?: string; payeeName?: string } };
+  if (!settings.upi?.vpa) return null;
+  return { vpa: settings.upi.vpa, payeeName: settings.upi.payeeName || restaurant.name };
+}
+
+// Customer requests a direct-UPI intent: unique amount + short code + deep link
+app.get('/api/payments/upi-intent/:orderId', limit(writeLimiter), asyncHandler(async (req, res) => {
+  const order = await prisma.order.findUnique({ where: { id: paramStr(req.params.orderId) } });
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+  if (order.paymentStatus === 'PAID') return res.status(409).json({ success: false, message: 'Order is already paid' });
+
+  const upi = await upiSettingsFor(order.restaurantId);
+  if (!upi) return res.status(400).json({ success: false, message: 'UPI payments are not configured for this restaurant' });
+
+  // Idempotent within the TTL window
+  if (order.expectedUpiAmount != null && order.orderShortCode && order.upiIntentAt &&
+      Date.now() - new Date(order.upiIntentAt).getTime() < UPI_INTENT_TTL_MS) {
+    return res.json({
+      success: true,
+      data: {
+        vpa: upi.vpa, payeeName: upi.payeeName,
+        amount: order.expectedUpiAmount, shortCode: order.orderShortCode,
+        deepLink: `upi://pay?pa=${encodeURIComponent(upi.vpa)}&pn=${encodeURIComponent(upi.payeeName)}&am=${order.expectedUpiAmount.toFixed(2)}&cu=INR&tn=Servora%20${order.orderShortCode}`,
+      },
+    });
+  }
+
+  // Assign a unique paise fingerprint among live pending intents with the same rupee base
+  const liveIntents = await prisma.order.findMany({
+    where: {
+      paymentStatus: { not: 'PAID' },
+      status: { notIn: ['CANCELLED'] },
+      expectedUpiAmount: { not: null },
+      upiIntentAt: { gte: new Date(Date.now() - UPI_MATCH_WINDOW_MS) },
+    },
+    select: { expectedUpiAmount: true },
+  });
+  const takenPaises = new Set(
+    liveIntents
+      .map(o => Math.round((o.expectedUpiAmount! % 1) * 100))
+      .filter(p => Number.isFinite(p))
+  );
+
+  const base = Math.floor(order.total);
+  const startPaise = upiPaise(order.id);
+  let paise = startPaise;
+  while (takenPaises.has(paise)) paise = (paise + 1) % 100;
+  let expected = base + paise / 100;
+  if (expected < order.total - 0.005) expected = base + 1 + paise / 100; // never undercharge
+
+  // Short code unique across all orders (DB unique index backstops races)
+  let shortCode = order.orderShortCode;
+  if (!shortCode) {
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const candidate = randomShortCode();
+      const clash = await prisma.order.findFirst({ where: { orderShortCode: candidate }, select: { id: true } });
+      if (!clash) { shortCode = candidate; break; }
+    }
+    if (!shortCode) shortCode = randomShortCode() + randomShortCode().slice(0, 2);
+  }
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { expectedUpiAmount: expected, orderShortCode: shortCode, upiIntentAt: new Date() },
+  });
+
+  return res.json({
+    success: true,
+    data: {
+      vpa: upi.vpa, payeeName: upi.payeeName,
+      amount: expected, shortCode,
+      deepLink: `upi://pay?pa=${encodeURIComponent(upi.vpa)}&pn=${encodeURIComponent(upi.payeeName)}&am=${expected.toFixed(2)}&cu=INR&tn=Servora%20${shortCode}`,
+    },
+  });
+}));
+
+// Relay webhook from the merchant's phone (MacroDroid → this endpoint).
+// Match cascade: short code in note → exact unique amount → single candidate in window.
+// Ambiguity NEVER auto-resolves — it escalates to staff confirmation.
+const upiWebhookLimiter = new RateLimiterMemory({ points: 60, duration: 60 });
+
+app.post('/api/payments/upi-webhook', limit(upiWebhookLimiter), asyncHandler(async (req, res) => {
+  const secret = process.env.UPI_WEBHOOK_SECRET;
+  if (!secret) return res.status(503).json({ success: false, message: 'UPI webhook not configured' });
+  const provided = req.headers['x-webhook-secret'];
+  if (typeof provided !== 'string' ||
+      provided.length !== secret.length ||
+      !crypto.timingSafeEqual(Buffer.from(provided), Buffer.from(secret))) {
+    return res.status(401).json({ success: false, message: 'Unauthorized' });
+  }
+
+  const rawText = typeof req.body.raw === 'string' ? req.body.raw : '';
+  const amountNum = Number(req.body.amount);
+  const reference = typeof req.body.reference === 'string' ? req.body.reference.slice(0, 64) : null;
+  console.log('[UPI Webhook]', JSON.stringify({ amount: req.body.amount, reference, app: req.body.app, raw: rawText.slice(0, 200) }));
+
+  if (reference) {
+    const seen = await prisma.payment.findFirst({ where: { reference, method: 'upi' }, select: { id: true } });
+    if (seen) return res.json({ success: true, data: { matched: false, reason: 'duplicate' } });
+  }
+
+  if (!Number.isFinite(amountNum) || amountNum <= 0) {
+    return res.json({ success: true, data: { matched: false, reason: 'invalid_amount' } });
+  }
+  const amountPaise = Math.round(amountNum * 100);
+
+  const candidates = await prisma.order.findMany({
+    where: {
+      paymentStatus: { not: 'PAID' },
+      status: { notIn: ['CANCELLED', 'COMPLETED'] },
+      expectedUpiAmount: { not: null },
+      upiIntentAt: { gte: new Date(Date.now() - UPI_MATCH_WINDOW_MS) },
+    },
+    orderBy: { upiIntentAt: 'asc' },
+    include: { items: true },
+  });
+
+  // Layer 1: short code present in notification text
+  const codeMatch = rawText ? rawText.toUpperCase().match(/\b([A-HJ-NP-Z2-9]{6})\b/) : null;
+  let matchedOrder = null;
+  let needsReview = false;
+
+  if (codeMatch) {
+    const byCode = candidates.filter(o => o.orderShortCode === codeMatch[1]);
+    if (byCode.length === 1) {
+      const o = byCode[0];
+      const expectedPaise = Math.round((o.expectedUpiAmount as number) * 100);
+      if (Math.abs(expectedPaise - amountPaise) <= 100) {
+        matchedOrder = o; // code agrees and amount is close → strong match
+      } else {
+        needsReview = true; // right code, wrong amount → human decides
+      }
+    }
+  }
+
+  // Layer 2: exact amount match
+  if (!matchedOrder && !needsReview) {
+    const byAmount = candidates.filter(o => Math.round((o.expectedUpiAmount as number) * 100) === amountPaise);
+    if (byAmount.length === 1) {
+      matchedOrder = byAmount[0];
+    } else if (byAmount.length > 1) {
+      needsReview = true; // ambiguous → never guess
+    }
+  }
+
+  if (!matchedOrder) {
+    return res.json({ success: true, data: { matched: false, reason: needsReview ? 'ambiguous_needs_review' : 'no_candidate' } });
+  }
+
+  await prisma.payment.create({
+    data: {
+      orderId: matchedOrder.id,
+      amount: matchedOrder.expectedUpiAmount ?? amountPaise / 100,
+      method: 'upi',
+      status: 'PAID',
+      reference,
+    },
+  });
+  await prisma.order.update({
+    where: { id: matchedOrder.id },
+    data: { paymentStatus: 'PAID', status: 'COMPLETED' },
+  });
+  emitToRestaurant(matchedOrder.restaurantId, 'payment:update', { orderId: matchedOrder.id, status: 'PAID', method: 'upi' });
+  return res.json({ success: true, data: { matched: true, orderId: matchedOrder.id, shortCode: matchedOrder.orderShortCode } });
+}));
+
+// Public minimal status for customer polling during UPI checkout
+app.get('/api/public/order-status/:orderId', asyncHandler(async (req, res) => {
+  const order = await prisma.order.findUnique({
+    where: { id: paramStr(req.params.orderId) },
+    select: { paymentStatus: true },
+  });
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+  return res.json({ success: true, data: { paid: order.paymentStatus === 'PAID' } });
 }));
 
 // ════════════════════════════════════════════════════════════════

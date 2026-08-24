@@ -1,11 +1,12 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useOrders } from '../../context/OrderContext';
 import { useCustomerRestaurant } from '../../context/CustomerRestaurantContext';
-import { createRazorpayOrder, verifyRazorpayPayment } from '../../lib/api';
+import { createRazorpayOrder, verifyRazorpayPayment, getUpiIntent, getPublicOrderStatus } from '../../lib/api';
 import { Icons } from '../../assets/icons';
 import Button from '../../components/ui/Button';
 import { generateReceipt } from '../../utils/receipt';
+import QRCode from 'qrcode';
 import './Payment.css';
 
 export default function Payment() {
@@ -21,6 +22,19 @@ export default function Payment() {
   const [error, setError] = useState(null);
   const [loadingRazorpay, setLoadingRazorpay] = useState(false);
 
+  // Direct UPI (BHIM) state
+  const [upiIntent, setUpiIntent] = useState(null); // { vpa, payeeName, amount, shortCode, deepLink }
+  const [upiQrDataUrl, setUpiQrDataUrl] = useState(null);
+  const [loadingUpi, setLoadingUpi] = useState(false);
+  const [showUpiPanel, setShowUpiPanel] = useState(false);
+  const pollRef = useRef(null);
+
+  const stopPolling = useCallback(() => {
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+  }, []);
+
+  useEffect(() => stopPolling, [stopPolling]);
+
   // Fetch order via API if not in context
   useEffect(() => {
     if (!orderId) return;
@@ -30,6 +44,40 @@ export default function Payment() {
   }, [orderId, fetchOrder]);
 
   const order = orders.find(o => o.id === orderId) || fetchedOrder;
+
+  const handleUpiPayment = useCallback(async () => {
+    if (!order || loadingUpi) return;
+    setLoadingUpi(true);
+    setError(null);
+    try {
+      const intent = await getUpiIntent(order.id);
+      setUpiIntent(intent);
+      setShowUpiPanel(true);
+
+      const qr = await QRCode.toDataURL(intent.deepLink, { width: 280, margin: 1 });
+      setUpiQrDataUrl(qr);
+
+      // Mobile: jump straight into the UPI app with everything pre-filled
+      window.location.href = intent.deepLink;
+
+      // Poll order status every 3s — webhook flips it to paid server-side
+      stopPolling();
+      pollRef.current = setInterval(async () => {
+        try {
+          const status = await getPublicOrderStatus(order.id);
+          if (status.paid) {
+            stopPolling();
+            setPaymentStatus('success');
+          }
+        } catch { /* transient — keep polling */ }
+      }, 3000);
+    } catch (err) {
+      console.error('[UPI Intent]', err);
+      setError(err.message || 'Could not start UPI payment. Please try again.');
+    } finally {
+      setLoadingUpi(false);
+    }
+  }, [order, loadingUpi, stopPolling]);
 
   // Countdown timer
   useEffect(() => {
@@ -242,27 +290,57 @@ export default function Payment() {
             <span>OR</span>
           </div>
 
-          {/* Fallback: UPI QR Code */}
+          {/* Direct UPI (BHIM) — no gateway */}
           <div className="payment-qr-section">
-            <div className="payment-qr-header">
-              <Icons.QrCode size={18} />
-              <span>Scan QR Code to Pay</span>
-            </div>
-            <div className="payment-qr-container">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(`upi://pay?pa=dcpayush@upi&pn=${encodeURIComponent(restaurant?.name || 'Restaurant')}&am=${order.total || 0}&cu=INR&tn=${encodeURIComponent('Payment for Order #' + String(order.id).slice(0, 8))}`)}`}
-                alt="UPI QR Code"
-                className="payment-qr-image"
-              />
-            </div>
-            <div className="payment-qr-hint">
-              Open any UPI app and scan this code
-            </div>
+            {!showUpiPanel ? (
+              <>
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  size="lg"
+                  loading={loadingUpi}
+                  onClick={handleUpiPayment}
+                >
+                  <Icons.QrCode size={16} />
+                  Pay via UPI — {restaurant?.name || 'Restaurant'}
+                </Button>
+                <p className="payment-qr-hint">
+                  Pays directly from your UPI app — GPay, PhonePe, Paytm & BHIM
+                </p>
+              </>
+            ) : (
+              <>
+                <div className="payment-qr-header">
+                  <Icons.QrCode size={18} />
+                  <span>Pay ₹{upiIntent?.amount?.toFixed(2)} to {upiIntent?.payeeName}</span>
+                </div>
+                {upiQrDataUrl && (
+                  <div className="payment-qr-container">
+                    <img src={upiQrDataUrl} alt="UPI QR Code" className="payment-qr-image" />
+                  </div>
+                )}
+                <div className="payment-qr-hint">
+                  Scan, or tap below to open your UPI app · Code <strong>{upiIntent?.shortCode}</strong>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <Button variant="primary" fullWidth onClick={() => window.location.href = upiIntent?.deepLink}>
+                    Open UPI App
+                  </Button>
+                  <Button variant="ghost" fullWidth onClick={() => { stopPolling(); setShowUpiPanel(false); }}>
+                    Use a different method
+                  </Button>
+                </div>
+                <div className="payment-timer" style={{ marginTop: 8 }}>
+                  <Icons.Clock size={14} />
+                  <span>Waiting for payment — this page updates automatically</span>
+                </div>
+              </>
+            )}
             <div className="payment-apps">
+              <div className="payment-app">BHIM</div>
               <div className="payment-app">Google Pay</div>
               <div className="payment-app">PhonePe</div>
               <div className="payment-app">Paytm</div>
-              <div className="payment-app">BHIM</div>
             </div>
           </div>
 

@@ -333,6 +333,14 @@ export async function verifyRazorpayPayment({ razorpay_order_id, razorpay_paymen
   });
 }
 
+export async function getUpiIntent(orderId) {
+  return api(`/api/payments/upi-intent/${encodeURIComponent(orderId)}`);
+}
+
+export async function getPublicOrderStatus(orderId) {
+  return api(`/api/public/order-status/${encodeURIComponent(orderId)}`);
+}
+
 // ============================================
 // Customers
 // ============================================

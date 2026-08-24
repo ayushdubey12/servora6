@@ -112,6 +112,9 @@ model Order {
   customer      Customer?   @relation(fields: [customerId], references: [id])
   pointsEarned  Int         @default(0)
   razorpayOrderId String?   @unique
+  expectedUpiAmount Float?
+  upiIntentAt       DateTime?
+  orderShortCode    String?   @unique
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   items         OrderItem[]
@@ -142,6 +145,7 @@ model Payment {
   amount    Float
   method    String
   status    String
+  reference String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
