@@ -1635,11 +1635,31 @@ app.get('/api/payments/upi-intent/:orderId', limit(writeLimiter), asyncHandler(a
 }));
 
 // Relay webhook from the merchant's phone (MacroDroid → this endpoint).
+// Accepts EITHER JSON ({amount, reference, raw}) or a plain-text body containing
+// the raw notification text — the server extracts amount and short code itself,
+// so the phone-side automation stays trivial.
 // Match cascade: short code in note → exact unique amount → single candidate in window.
 // Ambiguity NEVER auto-resolves — it escalates to staff confirmation.
 const upiWebhookLimiter = new RateLimiterMemory({ points: 60, duration: 60 });
 
-app.post('/api/payments/upi-webhook', limit(upiWebhookLimiter), asyncHandler(async (req, res) => {
+function extractAmountFromText(text: string): number | null {
+  const currencyPrefixed = text.match(/(?:₹|rs\.?|inr)\s*([0-9]+(?:,[0-9]{2,3})*(?:\.[0-9]{1,2})?)/i);
+  if (currencyPrefixed) {
+    const val = Number(currencyPrefixed[1].replace(/,/g, ''));
+    if (Number.isFinite(val) && val > 0 && val <= 1000000) return val;
+  }
+  const generic = text.match(/\b([0-9]{1,6}(?:\.[0-9]{1,2})?)\b/);
+  if (generic) {
+    const val = Number(generic[1]);
+    if (Number.isFinite(val) && val >= 1 && val <= 1000000) return val;
+  }
+  return null;
+}
+
+app.post('/api/payments/upi-webhook',
+  express.text({ type: ['text/*'], limit: '10kb' }),
+  limit(upiWebhookLimiter),
+  asyncHandler(async (req, res) => {
   const secret = process.env.UPI_WEBHOOK_SECRET;
   if (!secret) return res.status(503).json({ success: false, message: 'UPI webhook not configured' });
   const provided = req.headers['x-webhook-secret'];
@@ -1649,17 +1669,27 @@ app.post('/api/payments/upi-webhook', limit(upiWebhookLimiter), asyncHandler(asy
     return res.status(401).json({ success: false, message: 'Unauthorized' });
   }
 
-  const rawText = typeof req.body.raw === 'string' ? req.body.raw : '';
-  const amountNum = Number(req.body.amount);
-  const reference = typeof req.body.reference === 'string' ? req.body.reference.slice(0, 64) : null;
-  console.log('[UPI Webhook]', JSON.stringify({ amount: req.body.amount, reference, app: req.body.app, raw: rawText.slice(0, 200) }));
+  let payload: any = {};
+  let rawText = '';
+  if (typeof req.body === 'string') {
+    rawText = req.body;
+  } else if (req.body && typeof req.body === 'object') {
+    payload = req.body;
+    rawText = typeof payload.raw === 'string' ? payload.raw : '';
+  }
+
+  const amountNum = Number(payload.amount ?? extractAmountFromText(rawText));
+  const reference = typeof payload.reference === 'string' && payload.reference
+    ? payload.reference.slice(0, 64)
+    : 'auto-' + crypto.createHash('sha1').update(rawText || String(Date.now())).digest('hex').slice(0, 16);
+  console.log('[UPI Webhook]', JSON.stringify({ amount: payload.amount ?? '(from text)', reference, app: payload.app, raw: rawText.slice(0, 200) }));
 
   if (reference) {
     const seen = await prisma.payment.findFirst({ where: { reference, method: 'upi' }, select: { id: true } });
     if (seen) return res.json({ success: true, data: { matched: false, reason: 'duplicate' } });
   }
 
-  if (!Number.isFinite(amountNum) || amountNum <= 0) {
+  if (!Number.isFinite(amountNum) || amountNum <= 0 || amountNum > 1000000) {
     return res.json({ success: true, data: { matched: false, reason: 'invalid_amount' } });
   }
   const amountPaise = Math.round(amountNum * 100);
