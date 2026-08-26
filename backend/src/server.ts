@@ -858,7 +858,7 @@ app.get('/api/menu-items', requireAuth('staff'), asyncHandler(async (req, res) =
 app.post('/api/menu-items', requireAuth('staff'), limit(writeLimiter), asyncHandler(async (req, res) => {
   const schema = z.object({
     name: z.string().min(1).max(120),
-    description: z.string().min(1).max(500),
+    description: z.string().max(500).optional().default(''),
     price: z.number().min(0).max(1000000),
     categoryId: z.string().min(1).max(64),
     isVeg: z.boolean().optional(),
@@ -1762,6 +1762,46 @@ app.get('/api/public/order-status/:orderId', asyncHandler(async (req, res) => {
   });
   if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
   return res.json({ success: true, data: { paid: order.paymentStatus === 'PAID' } });
+}));
+
+// Public full order detail so guests can live-track status without staff auth.
+// Order ids are unguessable cuids; only lifecycle fields are exposed.
+app.get('/api/public/order-detail/:orderId', limit(writeLimiter), asyncHandler(async (req, res) => {
+  const order = await prisma.order.findUnique({
+    where: { id: paramStr(req.params.orderId) },
+    select: {
+      id: true,
+      tableNumber: true,
+      customerName: true,
+      status: true,
+      paymentStatus: true,
+      subtotal: true,
+      tax: true,
+      total: true,
+      pointsEarned: true,
+      createdAt: true,
+      updatedAt: true,
+      claimedBy: { select: { name: true, role: true } },
+      items: { select: { id: true, name: true, quantity: true, price: true } },
+    },
+  });
+  if (!order) return res.status(404).json({ success: false, message: 'Order not found' });
+  return res.json({ success: true, data: order });
+}));
+
+// Owner-only: wipe all order history for this restaurant (items + payments cascade via explicit deletes)
+app.delete('/api/orders', requireAuth('staff'), requireRole('owner'), limit(writeLimiter), asyncHandler(async (req, res) => {
+  const rid = requireStaffRestaurant(req, res);
+  if (!rid) return;
+  const orders = await prisma.order.findMany({ where: { restaurantId: rid }, select: { id: true } });
+  const ids = orders.map(o => o.id);
+  if (ids.length > 0) {
+    await prisma.payment.deleteMany({ where: { orderId: { in: ids } } });
+    await prisma.orderItem.deleteMany({ where: { orderId: { in: ids } } });
+    await prisma.order.deleteMany({ where: { id: { in: ids } } });
+  }
+  emitToRestaurant(rid, 'orders:cleared', { cleared: ids.length });
+  return res.json({ success: true, data: { deleted: ids.length } });
 }));
 
 // ════════════════════════════════════════════════════════════════

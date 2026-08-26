@@ -341,6 +341,14 @@ export async function getPublicOrderStatus(orderId) {
   return api(`/api/public/order-status/${encodeURIComponent(orderId)}`);
 }
 
+export async function getPublicOrderDetail(orderId) {
+  return api(`/api/public/order-detail/${encodeURIComponent(orderId)}`);
+}
+
+export async function clearAllOrders() {
+  return api('/api/orders', { method: 'DELETE' });
+}
+
 // ============================================
 // Customers
 // ============================================

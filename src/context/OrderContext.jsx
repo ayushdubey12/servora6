@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { getOrders, createOrder, updateOrderStatus, claimOrder, releaseOrder, getOrder } from '../lib/api';
+import { getOrders, createOrder, updateOrderStatus, claimOrder, releaseOrder, getPublicOrderDetail } from '../lib/api';
 import { useAuth } from './AuthContext';
 
 const OrderContext = createContext(null);
@@ -70,10 +70,11 @@ export function OrderProvider({ children }) {
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 
-  // Also poll for a specific order (used by customer tracking page)
+  // Also poll for a specific order (used by customer tracking page).
+  // Uses the public detail endpoint so guest/customer tokens work.
   const fetchAndTrackOrder = useCallback(async (orderId) => {
     try {
-      const data = await getOrder(orderId);
+      const data = await getPublicOrderDetail(orderId);
       if (data) {
         const parsed = orderFromRow(data);
         setOrders(prev => {
@@ -144,7 +145,7 @@ export function OrderProvider({ children }) {
 
   const fetchOrder = useCallback(async (orderId) => {
     try {
-      const data = await getOrder(orderId);
+      const data = await getPublicOrderDetail(orderId);
       return data ? orderFromRow(data) : null;
     } catch {
       return null;

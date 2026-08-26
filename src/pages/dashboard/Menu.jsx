@@ -62,7 +62,7 @@ export default function Menu() {
       const payload = {
         name: form.name,
         description: form.description,
-        price: Math.round(Number(form.price) * 100), // Convert rupees to paise for backend
+        price: Number(form.price),
         categoryId: form.category,
         isVeg: form.isVeg,
         isAvailable: form.isAvailable,
