@@ -1,40 +1,41 @@
 import { useState, useEffect } from 'react';
 import { Icons } from '../../assets/icons';
-import { getAdminHealth, getAdminProfile, updateAdminProfile } from '../../lib/api';
+import { getAdminHealth, getAdminProfile } from '../../lib/api';
 import './AdminSettings.css';
 
 export default function AdminSettings() {
   const [health, setHealth] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    Promise.all([getAdminHealth(), getAdminProfile()])
+    Promise.all([
+      getAdminHealth().catch(e => { console.error(e); return null; }),
+      getAdminProfile().catch(e => { console.error(e); return null; }),
+    ])
       .then(([h, p]) => {
         setHealth(h);
         setProfile(p);
-        setName(p.name || '');
+        if (p) setName(p.name || '');
       })
-      .catch(console.error)
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
-  const handleSaveProfile = async () => {
-    if (!name.trim()) return;
-    setSaving(true);
-    try {
-      await updateAdminProfile({ name });
-      setProfile({ ...profile, name });
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   if (loading) return <div className="admin-page"><p className="text-muted">Loading...</p></div>;
+
+  if (error) return (
+    <div className="admin-page">
+      <div className="admin-page-header"><h1 className="headline-lg">System Health</h1></div>
+      <div className="admin-card"><div className="admin-card-body" style={{ textAlign: 'center', padding: 40 }}>
+        <Icons.AlertTriangle size={40} style={{ color: '#dc2626', marginBottom: 12 }} />
+        <p style={{ color: '#dc2626' }}>Failed to load: {error}</p>
+      </div></div>
+    </div>
+  );
 
   return (
     <div className="admin-page">
@@ -43,7 +44,6 @@ export default function AdminSettings() {
         <p className="body-md text-muted">Platform status and admin profile</p>
       </div>
 
-      {/* Health Stats */}
       <div className="admin-stats-grid">
         <div className="admin-stat-card">
           <div className="admin-stat-icon success"><Icons.Activity size={22} /></div>
@@ -84,13 +84,12 @@ export default function AdminSettings() {
       </div>
 
       <div className="admin-dashboard-grid">
-        {/* Table Counts */}
         <div className="admin-card">
           <div className="admin-card-header">
             <h3 className="admin-card-title">Database Records</h3>
           </div>
           <div className="admin-card-body">
-            {health?.tableCounts && (
+            {health?.tableCounts ? (
               <div className="record-list">
                 {Object.entries(health.tableCounts).map(([table, count]) => (
                   <div key={table} className="record-item">
@@ -99,37 +98,39 @@ export default function AdminSettings() {
                   </div>
                 ))}
               </div>
+            ) : (
+              <p className="text-muted" style={{ textAlign: 'center', padding: 20 }}>Health data unavailable</p>
             )}
           </div>
         </div>
 
-        {/* Admin Profile */}
         <div className="admin-card">
           <div className="admin-card-header">
             <h3 className="admin-card-title">Admin Profile</h3>
           </div>
           <div className="admin-card-body">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
-              <div className="field">
-                <label className="label">Name</label>
-                <input className="input" value={name} onChange={e => setName(e.target.value)} />
+            {profile ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
+                <div className="field">
+                  <label className="label">Name</label>
+                  <input className="input" value={name} onChange={e => setName(e.target.value)} />
+                </div>
+                <div className="field">
+                  <label className="label">Email</label>
+                  <input className="input" value={profile.email || ''} disabled style={{ opacity: 0.6 }} />
+                </div>
+                <div className="field">
+                  <label className="label">Role</label>
+                  <input className="input" value={profile.role || 'admin'} disabled style={{ opacity: 0.6 }} />
+                </div>
+                <div className="field">
+                  <label className="label">Joined</label>
+                  <input className="input" value={profile.createdAt ? new Date(profile.createdAt).toLocaleDateString() : ''} disabled style={{ opacity: 0.6 }} />
+                </div>
               </div>
-              <div className="field">
-                <label className="label">Email</label>
-                <input className="input" value={profile?.email || ''} disabled style={{ opacity: 0.6 }} />
-              </div>
-              <div className="field">
-                <label className="label">Role</label>
-                <input className="input" value={profile?.role || 'admin'} disabled style={{ opacity: 0.6 }} />
-              </div>
-              <div className="field">
-                <label className="label">Joined</label>
-                <input className="input" value={profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : ''} disabled style={{ opacity: 0.6 }} />
-              </div>
-              <button className="btn btn-primary btn-sm" onClick={handleSaveProfile} disabled={saving}>
-                {saving ? 'Saving...' : 'Save Profile'}
-              </button>
-            </div>
+            ) : (
+              <p className="text-muted" style={{ textAlign: 'center', padding: 20 }}>Profile data unavailable</p>
+            )}
           </div>
         </div>
       </div>

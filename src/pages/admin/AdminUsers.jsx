@@ -6,6 +6,7 @@ import './AdminUsers.css';
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'owner', restaurantId: '' });
@@ -13,21 +14,21 @@ export default function AdminUsers() {
   useEffect(() => {
     getAdminUsers()
       .then(setUsers)
-      .catch(console.error)
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = users.filter(u =>
-    u.name.toLowerCase().includes(search.toLowerCase()) ||
-    u.email.toLowerCase().includes(search.toLowerCase()) ||
-    u.role.toLowerCase().includes(search.toLowerCase())
+  const filtered = (users || []).filter(u =>
+    (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
+    (u.role || '').toLowerCase().includes(search.toLowerCase())
   );
 
   const handleAdd = async () => {
     if (!form.name || !form.email || !form.password) return alert('Please fill all required fields');
     try {
       await createAdminUser(form);
-      const updated = await getAdminUsers();
+      const updated = await getAdminUsers().catch(() => users);
       setUsers(updated);
       setShowAdd(false);
       setForm({ name: '', email: '', password: '', role: 'owner', restaurantId: '' });
@@ -46,6 +47,16 @@ export default function AdminUsers() {
     }
   };
 
+  if (error) return (
+    <div className="admin-page">
+      <div className="admin-page-header"><h1 className="headline-lg">Users</h1></div>
+      <div className="admin-card"><div className="admin-card-body" style={{ textAlign: 'center', padding: 40 }}>
+        <Icons.AlertTriangle size={40} style={{ color: '#dc2626', marginBottom: 12 }} />
+        <p style={{ color: '#dc2626' }}>Failed to load: {error}</p>
+      </div></div>
+    </div>
+  );
+
   return (
     <div className="admin-page">
       <div className="admin-page-header">
@@ -60,7 +71,6 @@ export default function AdminUsers() {
         </div>
       </div>
 
-      {/* Add User Form */}
       {showAdd && (
         <div className="admin-card">
           <div className="admin-card-header">

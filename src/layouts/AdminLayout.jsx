@@ -4,6 +4,7 @@ import Sidebar from '../components/ui/Sidebar';
 import { Icons } from '../assets/icons';
 import Avatar from '../components/ui/Avatar';
 import Dropdown, { DropdownItem, DropdownDivider } from '../components/ui/Dropdown';
+import ErrorBoundary from '../components/ErrorBoundary';
 import './AdminLayout.css';
 
 const ADMIN_STORAGE_KEY = 'servora-admin';
@@ -126,7 +127,9 @@ export default function AdminLayout() {
         </header>
 
         <main className="admin-content">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

@@ -11,13 +11,17 @@ export default function AdminRevenue() {
   const [data, setData] = useState(null);
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ restaurantId: '', amount: '', type: 'setup', description: '' });
 
   useEffect(() => {
-    Promise.all([getAdminRevenue(), getAdminRestaurants()])
+    Promise.all([
+      getAdminRevenue().catch(e => { console.error(e); return { entries: [], total: 0, byType: {}, byMonth: {} }; }),
+      getAdminRestaurants().catch(e => { console.error(e); return []; }),
+    ])
       .then(([rev, rest]) => { setData(rev); setRestaurants(rest); })
-      .catch(console.error)
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
@@ -30,7 +34,7 @@ export default function AdminRevenue() {
         type: form.type,
         description: form.description || undefined,
       });
-      const updated = await getAdminRevenue();
+      const updated = await getAdminRevenue().catch(() => data);
       setData(updated);
       setShowAdd(false);
       setForm({ restaurantId: '', amount: '', type: 'setup', description: '' });
@@ -40,6 +44,16 @@ export default function AdminRevenue() {
   };
 
   if (loading) return <div className="admin-page"><p className="text-muted">Loading...</p></div>;
+
+  if (error) return (
+    <div className="admin-page">
+      <div className="admin-page-header"><h1 className="headline-lg">Revenue</h1></div>
+      <div className="admin-card"><div className="admin-card-body" style={{ textAlign: 'center', padding: 40 }}>
+        <Icons.AlertTriangle size={40} style={{ color: '#dc2626', marginBottom: 12 }} />
+        <p style={{ color: '#dc2626' }}>Failed to load: {error}</p>
+      </div></div>
+    </div>
+  );
 
   return (
     <div className="admin-page">
@@ -55,7 +69,6 @@ export default function AdminRevenue() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="admin-stats-grid">
         <div className="admin-stat-card">
           <div className="admin-stat-icon success"><Icons.DollarSign size={22} /></div>
@@ -87,7 +100,6 @@ export default function AdminRevenue() {
         </div>
       </div>
 
-      {/* Add Revenue Form */}
       {showAdd && (
         <div className="admin-card">
           <div className="admin-card-header">
@@ -99,7 +111,7 @@ export default function AdminRevenue() {
                 <label className="label">Restaurant</label>
                 <select className="input" value={form.restaurantId} onChange={e => setForm({ ...form, restaurantId: e.target.value })}>
                   <option value="">Select restaurant</option>
-                  {restaurants.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                  {(restaurants || []).map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                 </select>
               </div>
               <div className="field">
@@ -125,7 +137,6 @@ export default function AdminRevenue() {
         </div>
       )}
 
-      {/* Revenue by Month */}
       {data?.byMonth && Object.keys(data.byMonth).length > 0 && (
         <div className="admin-card">
           <div className="admin-card-header">
@@ -151,7 +162,6 @@ export default function AdminRevenue() {
         </div>
       )}
 
-      {/* Revenue Entries */}
       <div className="admin-card">
         <div className="admin-card-header">
           <h3 className="admin-card-title">All Payments ({data?.entries?.length || 0})</h3>
@@ -176,7 +186,7 @@ export default function AdminRevenue() {
                 {data.entries.map(e => (
                   <tr key={e.id}>
                     <td className="font-medium">{e.restaurant?.name || '—'}</td>
-                    <td><span className={`type-badge type-${e.type}`}>{e.type.replace('_', ' ')}</span></td>
+                    <td><span className={`type-badge type-${e.type}`}>{(e.type || '').replace('_', ' ')}</span></td>
                     <td className="font-medium">{formatCurrency(e.amount)}</td>
                     <td className="text-muted">{e.description || '—'}</td>
                     <td className="text-muted">{new Date(e.date).toLocaleDateString()}</td>

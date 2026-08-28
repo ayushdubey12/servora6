@@ -11,19 +11,31 @@ function formatCurrency(amount) {
 export default function AdminRestaurants() {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
     getAdminRestaurants()
       .then(setRestaurants)
-      .catch(console.error)
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
 
-  const filtered = restaurants.filter(r =>
-    r.name.toLowerCase().includes(search.toLowerCase()) ||
-    r.slug.toLowerCase().includes(search.toLowerCase())
+  const filtered = (restaurants || []).filter(r =>
+    (r.name || '').toLowerCase().includes(search.toLowerCase()) ||
+    (r.slug || '').toLowerCase().includes(search.toLowerCase())
+  );
+
+  if (error) return (
+    <div className="admin-page">
+      <div className="admin-page-header"><h1 className="headline-lg">Restaurants</h1></div>
+      <div className="admin-card"><div className="admin-card-body" style={{ textAlign: 'center', padding: 40 }}>
+        <Icons.AlertTriangle size={40} style={{ color: '#dc2626', marginBottom: 12 }} />
+        <p style={{ color: '#dc2626' }}>Failed to load: {error}</p>
+        <button className="btn btn-ghost btn-sm" style={{ marginTop: 8 }} onClick={() => { setError(null); setLoading(true); getAdminRestaurants().then(setRestaurants).catch(e => setError(e.message)).finally(() => setLoading(false)); }}>Retry</button>
+      </div></div>
+    </div>
   );
 
   return (
@@ -106,6 +118,7 @@ export function AdminRestaurantDetail() {
   const { id } = useParams();
   const [restaurant, setRestaurant] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [editData, setEditData] = useState({});
   const [subPlan, setSubPlan] = useState('basic');
@@ -118,14 +131,14 @@ export function AdminRestaurantDetail() {
     getAdminRestaurantDetail(id)
       .then(data => {
         setRestaurant(data);
-        setEditData({ name: data.name, description: data.description || '', phone: data.phone || '', email: data.email || '', address: data.address || '' });
+        setEditData({ name: data.name || '', description: data.description || '', phone: data.phone || '', email: data.email || '', address: data.address || '' });
         if (data.subscriptions?.[0]) {
           setSubPlan(data.subscriptions[0].plan);
           setSubSetupFee(data.subscriptions[0].setupFee);
           setSubAnnualFee(data.subscriptions[0].annualFee);
         }
       })
-      .catch(console.error)
+      .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -151,6 +164,17 @@ export function AdminRestaurantDetail() {
   };
 
   if (loading) return <div className="admin-page"><p className="text-muted">Loading...</p></div>;
+  if (error) return (
+    <div className="admin-page">
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)', marginBottom: 'var(--space-4)' }}>
+        <button className="btn btn-ghost btn-sm" onClick={() => navigate('/admin/restaurants')}><Icons.ArrowLeft size={16} /> Back</button>
+      </div>
+      <div className="admin-card"><div className="admin-card-body" style={{ textAlign: 'center', padding: 40 }}>
+        <Icons.AlertTriangle size={40} style={{ color: '#dc2626', marginBottom: 12 }} />
+        <p style={{ color: '#dc2626' }}>Failed to load: {error}</p>
+      </div></div>
+    </div>
+  );
   if (!restaurant) return <div className="admin-page"><p className="text-muted">Restaurant not found</p></div>;
 
   return (
@@ -167,7 +191,6 @@ export function AdminRestaurantDetail() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="admin-stats-grid">
         <div className="admin-stat-card">
           <div className="admin-stat-icon primary"><Icons.ShoppingCart size={22} /></div>
@@ -200,7 +223,6 @@ export function AdminRestaurantDetail() {
       </div>
 
       <div className="admin-dashboard-grid">
-        {/* Details */}
         <div className="admin-card">
           <div className="admin-card-header">
             <h3 className="admin-card-title">Restaurant Details</h3>
@@ -213,23 +235,23 @@ export function AdminRestaurantDetail() {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
                 <div className="field">
                   <label className="label">Name</label>
-                  <input className="input" value={editData.name} onChange={e => setEditData({ ...editData, name: e.target.value })} />
+                  <input className="input" value={editData.name || ''} onChange={e => setEditData({ ...editData, name: e.target.value })} />
                 </div>
                 <div className="field">
                   <label className="label">Description</label>
-                  <textarea className="input" rows={2} value={editData.description} onChange={e => setEditData({ ...editData, description: e.target.value })} />
+                  <textarea className="input" rows={2} value={editData.description || ''} onChange={e => setEditData({ ...editData, description: e.target.value })} />
                 </div>
                 <div className="field">
                   <label className="label">Phone</label>
-                  <input className="input" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
+                  <input className="input" value={editData.phone || ''} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
                 </div>
                 <div className="field">
                   <label className="label">Email</label>
-                  <input className="input" value={editData.email} onChange={e => setEditData({ ...editData, email: e.target.value })} />
+                  <input className="input" value={editData.email || ''} onChange={e => setEditData({ ...editData, email: e.target.value })} />
                 </div>
                 <div className="field">
                   <label className="label">Address</label>
-                  <textarea className="input" rows={2} value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
+                  <textarea className="input" rows={2} value={editData.address || ''} onChange={e => setEditData({ ...editData, address: e.target.value })} />
                 </div>
                 <button className="btn btn-primary btn-sm" onClick={handleSave}>Save Changes</button>
               </div>
@@ -260,7 +282,6 @@ export function AdminRestaurantDetail() {
           </div>
         </div>
 
-        {/* Subscription */}
         <div className="admin-card">
           <div className="admin-card-header">
             <h3 className="admin-card-title">Subscription</h3>
@@ -308,7 +329,6 @@ export function AdminRestaurantDetail() {
         </div>
       </div>
 
-      {/* Staff */}
       <div className="admin-card">
         <div className="admin-card-header">
           <h3 className="admin-card-title">Staff ({restaurant.users?.length || 0})</h3>
@@ -316,12 +336,7 @@ export function AdminRestaurantDetail() {
         <div className="admin-card-body" style={{ padding: 0 }}>
           <table className="admin-table">
             <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Joined</th>
-              </tr>
+              <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr>
             </thead>
             <tbody>
               {(restaurant.users || []).map(u => (
@@ -332,12 +347,14 @@ export function AdminRestaurantDetail() {
                   <td className="text-muted">{new Date(u.createdAt).toLocaleDateString()}</td>
                 </tr>
               ))}
+              {(!restaurant.users || restaurant.users.length === 0) && (
+                <tr><td colSpan={4} style={{ textAlign: 'center', padding: 20 }} className="text-muted">No staff</td></tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Recent Orders */}
       <div className="admin-card">
         <div className="admin-card-header">
           <h3 className="admin-card-title">Recent Orders</h3>
@@ -350,13 +367,7 @@ export function AdminRestaurantDetail() {
           ) : (
             <table className="admin-table">
               <thead>
-                <tr>
-                  <th>Table</th>
-                  <th>Customer</th>
-                  <th>Status</th>
-                  <th>Total</th>
-                  <th>Date</th>
-                </tr>
+                <tr><th>Table</th><th>Customer</th><th>Status</th><th>Total</th><th>Date</th></tr>
               </thead>
               <tbody>
                 {restaurant.recentOrders.map(o => (
