@@ -1917,8 +1917,38 @@ process.on('uncaughtException', (err) => {
 });
 
 // ── Start ───────────────────────────────────────────────────────
+async function ensureAdminTables() {
+  try {
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Subscription" (
+        "id" TEXT NOT NULL, "restaurantId" TEXT NOT NULL, "plan" TEXT NOT NULL DEFAULT 'basic',
+        "setupFee" DOUBLE PRECISION NOT NULL DEFAULT 0, "annualFee" DOUBLE PRECISION NOT NULL DEFAULT 0,
+        "status" TEXT NOT NULL DEFAULT 'active', "startDate" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "nextBillingDate" TIMESTAMP(3), "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL, CONSTRAINT "Subscription_pkey" PRIMARY KEY ("id")
+      )
+    `);
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Revenue" (
+        "id" TEXT NOT NULL, "restaurantId" TEXT NOT NULL, "amount" DOUBLE PRECISION NOT NULL,
+        "type" TEXT NOT NULL, "description" TEXT, "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "Revenue_pkey" PRIMARY KEY ("id")
+      )
+    `);
+    // Add foreign keys safely
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Subscription" ADD CONSTRAINT "Subscription_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE RESTRICT ON UPDATE CASCADE`); } catch {}
+    try { await prisma.$executeRawUnsafe(`ALTER TABLE "Revenue" ADD CONSTRAINT "Revenue_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE RESTRICT ON UPDATE CASCADE`); } catch {}
+    // Reset failed migration so prisma migrate deploy works next time
+    try { await prisma.$executeRawUnsafe(`UPDATE "_prisma_migrations" SET finished_at = CURRENT_TIMESTAMP, migration_name = '20260828000000_add_subscription_revenue' WHERE migration_name = '20260828000000_add_subscription_revenue' AND finished_at IS NULL`); } catch {}
+    console.log('[DB] Subscription + Revenue tables ensured');
+  } catch (e: any) {
+    console.error('[DB] Table ensure skipped:', e.message);
+  }
+}
+
 async function startServer() {
   await prisma.$connect();
+  await ensureAdminTables();
   await seedDefaultData();
   await healEmptyRestaurant();
   await rotateSeededCredentials();
