@@ -364,20 +364,28 @@ async function healEmptyRestaurant() {
 // ── Seed platform admin user ───────────────────────────────────
 async function seedAdminUser() {
   const adminEmail = 'admin@servora.in';
+  const defaultPassword = 'Servora@2026';
   const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
-  if (existing) return;
 
-  const password = crypto.randomBytes(18).toString('base64url');
+  if (existing) {
+    // Ensure password matches default (in case it was changed)
+    const matchesDefault = await bcrypt.compare(defaultPassword, existing.password).catch(() => false);
+    if (!matchesDefault) {
+      await prisma.user.update({ where: { id: existing.id }, data: { password: await bcrypt.hash(defaultPassword, 10) } });
+    }
+    console.log(`\n[ADMIN] Login: ${adminEmail} / ${defaultPassword}\n`);
+    return;
+  }
+
   await prisma.user.create({
     data: {
       name: 'Servora Admin',
       email: adminEmail,
-      password: await bcrypt.hash(password, 10),
+      password: await bcrypt.hash(defaultPassword, 10),
       role: 'admin',
     },
   });
-  console.log(`\n[ADMIN] Platform admin created: ${adminEmail}`);
-  console.log(`[ADMIN] Password (shown once, save it now): ${password}\n`);
+  console.log(`\n[ADMIN] Platform admin created: ${adminEmail} / ${defaultPassword}\n`);
 }
 
 // ── One-time rotation of publicly-leaked default credentials ────
