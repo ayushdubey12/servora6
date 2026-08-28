@@ -121,5 +121,6 @@ export const useAuth = () => {
 export function roleHome(role) {
   if (role === 'chef') return '/kitchen';
   if (role === 'waiter') return '/staff';
+  if (role === 'admin') return '/admin';
   return '/dashboard';
 }

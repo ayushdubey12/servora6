@@ -68,6 +68,16 @@ import StaffOrders from './pages/staff/StaffOrders';
 import StaffTables from './pages/staff/StaffTables';
 import ProtectedRoute from './components/ProtectedRoute';
 
+// Admin (Platform)
+import AdminLayout, { AdminAuthProvider } from './layouts/AdminLayout';
+import AdminLogin from './pages/admin/AdminLogin';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminRestaurants, { AdminRestaurantDetail } from './pages/admin/AdminRestaurants';
+import AdminCustomers from './pages/admin/AdminCustomers';
+import AdminRevenue from './pages/admin/AdminRevenue';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminSettings from './pages/admin/AdminSettings';
+
 export default function App() {
   return (
     <Routes>
@@ -151,6 +161,20 @@ export default function App() {
         <Route index element={<StaffDashboard />} />
         <Route path="orders" element={<StaffOrders />} />
         <Route path="tables" element={<StaffTables />} />
+      </Route>
+
+      {/* Platform Admin Routes */}
+      <Route path="/admin" element={<AdminAuthProvider />}>
+        <Route path="login" element={<AdminLogin />} />
+        <Route element={<AdminLayout />}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="restaurants" element={<AdminRestaurants />} />
+          <Route path="restaurants/:id" element={<AdminRestaurantDetail />} />
+          <Route path="customers" element={<AdminCustomers />} />
+          <Route path="revenue" element={<AdminRevenue />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="health" element={<AdminSettings />} />
+        </Route>
       </Route>
     </Routes>
   );

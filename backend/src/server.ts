@@ -11,6 +11,7 @@ import crypto from 'crypto';
 import { RateLimiterMemory } from 'rate-limiter-flexible';
 import Razorpay from 'razorpay';
 import { prisma } from './lib/prisma.js';
+import adminRouter from './admin.js';
 
 // ── Environment validation ──────────────────────────────────────
 const JWT_SECRET = process.env.JWT_SECRET || '';
@@ -358,6 +359,25 @@ async function healEmptyRestaurant() {
     console.log('[SEED] Restaurant exists but has no menu/tables — restoring demo content');
     await seedRestaurantContent(restaurant.id);
   }
+}
+
+// ── Seed platform admin user ───────────────────────────────────
+async function seedAdminUser() {
+  const adminEmail = 'admin@servora.in';
+  const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (existing) return;
+
+  const password = crypto.randomBytes(18).toString('base64url');
+  await prisma.user.create({
+    data: {
+      name: 'Servora Admin',
+      email: adminEmail,
+      password: await bcrypt.hash(password, 10),
+      role: 'admin',
+    },
+  });
+  console.log(`\n[ADMIN] Platform admin created: ${adminEmail}`);
+  console.log(`[ADMIN] Password (shown once, save it now): ${password}\n`);
 }
 
 // ── One-time rotation of publicly-leaked default credentials ────
@@ -1859,6 +1879,11 @@ app.get('/api/public/menu/:slug/item/:itemId', asyncHandler(async (req, res) => 
 }));
 
 // ════════════════════════════════════════════════════════════════
+//  ADMIN ROUTES
+// ════════════════════════════════════════════════════════════════
+app.use('/api/admin', adminRouter);
+
+// ════════════════════════════════════════════════════════════════
 //  ERROR HANDLING
 // ════════════════════════════════════════════════════════════════
 
@@ -1889,6 +1914,7 @@ async function startServer() {
   await seedDefaultData();
   await healEmptyRestaurant();
   await rotateSeededCredentials();
+  await seedAdminUser();
   const port = Number(process.env.PORT || 5000);
   httpServer.listen(port, '0.0.0.0', () => {
     console.log(`SERVORA backend listening on port ${port}`);

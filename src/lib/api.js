@@ -396,3 +396,127 @@ export async function replyToFeedback(id, reply) {
     body: JSON.stringify({ reply }),
   });
 }
+
+// ============================================
+// Admin API
+// ============================================
+
+function adminHeaders() {
+  const stored = localStorage.getItem('servora-admin');
+  if (!stored) return {};
+  try {
+    const { token } = JSON.parse(stored);
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  } catch {
+    return {};
+  }
+}
+
+async function adminApi(path, options = {}) {
+  const url = `${API_URL}${path}`;
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...adminHeaders(),
+      ...options.headers,
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ error: res.statusText }));
+    throw new Error(body.error || body.message || `API error ${res.status}`);
+  }
+
+  const json = await res.json();
+  if (json && json.success && json.data !== undefined) return json.data;
+  return json;
+}
+
+export async function adminLogin(email, password) {
+  return adminApi('/api/admin/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+  });
+}
+
+export async function getAdminProfile() {
+  return adminApi('/api/admin/profile');
+}
+
+export async function updateAdminProfile(data) {
+  return adminApi('/api/admin/profile', {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getAdminStats() {
+  return adminApi('/api/admin/stats');
+}
+
+export async function getAdminRestaurants() {
+  return adminApi('/api/admin/restaurants');
+}
+
+export async function getAdminRestaurantDetail(id) {
+  return adminApi(`/api/admin/restaurants/${id}`);
+}
+
+export async function updateAdminRestaurant(id, data) {
+  return adminApi(`/api/admin/restaurants/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function createAdminSubscription(restaurantId, data) {
+  return adminApi(`/api/admin/restaurants/${restaurantId}/subscription`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getAdminCustomers() {
+  return adminApi('/api/admin/customers');
+}
+
+export async function exportAdminCustomers() {
+  const stored = localStorage.getItem('servora-admin');
+  const { token } = JSON.parse(stored || '{}');
+  const res = await fetch(`${API_URL}/api/admin/customers/export`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  if (!res.ok) throw new Error('Export failed');
+  return res.blob();
+}
+
+export async function getAdminRevenue() {
+  return adminApi('/api/admin/revenue');
+}
+
+export async function addAdminRevenue(data) {
+  return adminApi('/api/admin/revenue', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function getAdminUsers() {
+  return adminApi('/api/admin/users');
+}
+
+export async function createAdminUser(data) {
+  return adminApi('/api/admin/users', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteAdminUser(id) {
+  return adminApi(`/api/admin/users/${id}`, { method: 'DELETE' });
+}
+
+export async function getAdminHealth() {
+  return adminApi('/api/admin/health');
+}

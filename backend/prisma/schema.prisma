@@ -28,6 +28,8 @@ model Restaurant {
   orders       Order[]
   customers    Customer[]
   reservations Reservation[]
+  subscriptions Subscription[]
+  revenue       Revenue[]
 
   @@schema("public")
 }
@@ -37,7 +39,7 @@ model User {
   name          String
   email         String      @unique
   password      String
-  role          String      @default("owner")
+  role          String      @default("owner") // owner | waiter | chef | admin
   restaurantId  String?
   restaurant    Restaurant? @relation(fields: [restaurantId], references: [id])
   claimedOrders Order[]     @relation("ClaimedBy")
@@ -187,6 +189,35 @@ model Reservation {
   status       String     @default("PENDING")
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
+
+  @@schema("public")
+}
+
+model Subscription {
+  id              String     @id @default(cuid())
+  restaurantId    String
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id])
+  plan            String     @default("basic") // basic | premium
+  setupFee        Float      @default(0)
+  annualFee       Float      @default(0)
+  status          String     @default("active") // active | cancelled | expired
+  startDate       DateTime   @default(now())
+  nextBillingDate DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  @@schema("public")
+}
+
+model Revenue {
+  id              String   @id @default(cuid())
+  restaurantId    String
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id])
+  amount          Float
+  type            String   // setup | annual | data_addon | hardware
+  description     String?
+  date            DateTime @default(now())
+  createdAt       DateTime @default(now())
 
   @@schema("public")
 }

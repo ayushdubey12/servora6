@@ -1,0 +1,122 @@
+/* Admin Dashboard */
+
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.admin-page-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.admin-page-header .headline-lg {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.admin-page-header .body-md {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--on-surface-variant);
+}
+
+.admin-dashboard-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: var(--space-5);
+}
+
+/* Table */
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th {
+  padding: var(--space-3) var(--space-4);
+  text-align: left;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--outline-variant);
+  background: var(--surface-container-low);
+}
+
+.admin-table td {
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: var(--on-surface);
+  border-bottom: 1px solid var(--outline-variant);
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background: var(--surface-container-low);
+}
+
+.font-medium { font-weight: 600; }
+.text-muted { color: var(--on-surface-variant); }
+
+/* Status badges */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-pending { background: rgba(218, 165, 32, 0.12); color: #b8860b; }
+.status-accepted, .status-preparing { background: rgba(70, 130, 180, 0.12); color: #4682b4; }
+.status-ready { background: rgba(34, 139, 34, 0.12); color: #228b22; }
+.status-completed, .status-paid { background: rgba(34, 139, 34, 0.12); color: #228b22; }
+.status-cancelled { background: rgba(220, 38, 38, 0.12); color: #dc2626; }
+.status-served { background: rgba(163, 56, 24, 0.12); color: var(--primary); }
+
+/* Revenue list */
+.revenue-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.revenue-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--outline-variant);
+}
+
+.revenue-item:last-child { border-bottom: none; }
+
+.revenue-name {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--on-surface);
+}
+
+.revenue-amount {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+@media (max-width: 1024px) {
+  .admin-dashboard-grid { grid-template-columns: 1fr; }
+}
