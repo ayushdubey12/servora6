@@ -8,19 +8,15 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import { RateLimiterMemory } from 'rate-limiter-flexible';
 import Razorpay from 'razorpay';
 import { prisma } from './lib/prisma.js';
+import { SECRET } from './lib/config.js';
+import { generalLimiter, authLimiter, writeLimiter, upiWebhookLimiter } from './lib/rateLimiters.js';
+import type { RateLimiterMemory } from 'rate-limiter-flexible';
 import adminRouter from './admin.js';
 
 // ── Environment validation ──────────────────────────────────────
-const JWT_SECRET = process.env.JWT_SECRET || '';
-if (process.env.NODE_ENV === 'production' && JWT_SECRET.length < 32) {
-  console.error('FATAL: JWT_SECRET env var must be set to at least 32 random characters in production.');
-  console.error('Generate one with: openssl rand -hex 48');
-  process.exit(1);
-}
-const SECRET = JWT_SECRET || 'insecure-dev-secret-do-not-use-in-production';
+// JWT_SECRET validation is in lib/config.ts (shared with admin.ts)
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || '',
@@ -40,10 +36,12 @@ const allowedOrigins = (process.env.CORS_ORIGIN || '')
   .filter(Boolean);
 
 function isOriginAllowed(origin: string | undefined): boolean {
-  if (!origin) return true;
+  if (!origin) return true; // non-browser clients (curl, Postman)
   if (process.env.NODE_ENV !== 'production') {
     return allowedOrigins.length === 0 || allowedOrigins.includes(origin);
   }
+  // In production: if no CORS_ORIGIN is set, block ALL cross-origin requests
+  if (allowedOrigins.length === 0) return false;
   return allowedOrigins.includes(origin);
 }
 
@@ -99,7 +97,20 @@ function emitToRestaurant(restaurantId: string | null | undefined, event: string
 }
 
 // ── Middleware ──────────────────────────────────────────────────
-app.use(helmet({ contentSecurityPolicy: false }));
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      frameSrc: ["https://api.razorpay.com"],
+    },
+  },
+  crossOriginEmbedderPolicy: false,
+}));
 app.use(cors({
   origin: (origin, callback) => {
     if (isOriginAllowed(origin)) callback(null, true);
@@ -110,9 +121,7 @@ app.use(cors({
 app.use(express.json({ limit: '100kb' }));
 
 // ── Rate limiting ───────────────────────────────────────────────
-const generalLimiter = new RateLimiterMemory({ points: 240, duration: 60 });
-const authLimiter = new RateLimiterMemory({ points: 10, duration: 60 });
-const writeLimiter = new RateLimiterMemory({ points: 30, duration: 60 });
+// Import shared limiters from lib/rateLimiters.ts
 
 function limit(limiter: RateLimiterMemory) {
   return (_req: Request, res: Response, next: NextFunction) => {
@@ -361,22 +370,17 @@ async function healEmptyRestaurant() {
   }
 }
 
-// ── Seed platform admin user ───────────────────────────────────
+// ── Seed platform admin user (create once, never reset password) ──
 async function seedAdminUser() {
   const adminEmail = 'admin@servora.in';
-  const defaultPassword = 'Servora@2026';
   const existing = await prisma.user.findUnique({ where: { email: adminEmail } });
 
   if (existing) {
-    // Ensure password matches default (in case it was changed)
-    const matchesDefault = await bcrypt.compare(defaultPassword, existing.password).catch(() => false);
-    if (!matchesDefault) {
-      await prisma.user.update({ where: { id: existing.id }, data: { password: await bcrypt.hash(defaultPassword, 10) } });
-    }
-    console.log(`\n[ADMIN] Login: ${adminEmail} / ${defaultPassword}\n`);
+    console.log(`\n[ADMIN] Admin user exists: ${adminEmail}\n`);
     return;
   }
 
+  const defaultPassword = 'Servora@2026';
   await prisma.user.create({
     data: {
       name: 'Servora Admin',
@@ -1668,7 +1672,6 @@ app.get('/api/payments/upi-intent/:orderId', limit(writeLimiter), asyncHandler(a
 // so the phone-side automation stays trivial.
 // Match cascade: short code in note → exact unique amount → single candidate in window.
 // Ambiguity NEVER auto-resolves — it escalates to staff confirmation.
-const upiWebhookLimiter = new RateLimiterMemory({ points: 60, duration: 60 });
 
 function extractAmountFromText(text: string): number | null {
   const currencyPrefixed = text.match(/(?:₹|rs\.?|inr)\s*([0-9]+(?:,[0-9]{2,3})*(?:\.[0-9]{1,2})?)/i);

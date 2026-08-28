@@ -3,8 +3,8 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { prisma } from './lib/prisma.js';
-
-const SECRET = process.env.JWT_SECRET || 'insecure-dev-secret-do-not-use-in-production';
+import { SECRET } from './lib/config.js';
+import { adminAuthLimiter } from './lib/rateLimiters.js';
 
 const adminRouter = Router();
 
@@ -55,7 +55,11 @@ async function safeRevenue(where: any = {}, options: any = {}): Promise<any[]> {
 //  ADMIN AUTH
 // ════════════════════════════════════════════════════════════════
 
-adminRouter.post('/login', asyncHandler(async (req, res) => {
+adminRouter.post('/login', (req, res, next) => {
+  adminAuthLimiter.consume(req.ip ?? 'unknown')
+    .then(() => next())
+    .catch(() => res.status(429).json({ success: false, message: 'Too many login attempts. Please wait.' }));
+}, asyncHandler(async (req, res) => {
   const schema = z.object({ email: z.string().email(), password: z.string().min(1) });
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return res.status(400).json({ success: false, message: 'Invalid credentials' });
