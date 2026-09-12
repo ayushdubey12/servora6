@@ -43,27 +43,26 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4" style={{ background: 'var(--background)' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center py-12 px-4" style={{ background: 'var(--nb-bg, #FAF6EE)' }}>
       <div className="w-full" style={{ maxWidth: '440px' }}>
         <div className="flex justify-center mb-6">
           <Link to="/" className="flex items-center gap-3">
-            <Icons.Logo size={44} />
-            <span style={{ fontSize: '28px', fontWeight: 800, color: 'var(--on-surface)', letterSpacing: '-0.01em' }}>Servora</span>
+            <span style={{ fontSize: '28px', fontWeight: 900, color: 'var(--nb-black, #0E0E10)', letterSpacing: '-0.03em' }}>Servora</span>
           </Link>
         </div>
-        <h2 className="text-center" style={{ fontFamily: 'var(--font-display)', fontSize: '28px', fontWeight: 600, color: 'var(--on-surface)', lineHeight: '36px', marginBottom: '8px' }}>
-          Start your free trial
+        <h2 className="text-center" style={{ fontFamily: 'var(--nb-font)', fontSize: '28px', fontWeight: 900, color: 'var(--nb-black, #0E0E10)', lineHeight: '36px', marginBottom: '8px' }}>
+          Create your account
         </h2>
-        <p className="text-center" style={{ color: 'var(--on-surface-variant)', fontSize: '16px', fontWeight: 500 }}>
+        <p className="text-center" style={{ color: '#555555', fontSize: '15px', fontWeight: 600 }}>
           Already have an account?{' '}
-          <Link to="/login" style={{ color: 'var(--primary)', fontWeight: 600 }}>
+          <Link to="/login" style={{ color: 'var(--nb-black)', fontWeight: 800, textDecoration: 'underline' }}>
             Sign in here
           </Link>
         </p>
       </div>
 
-      <div className="w-full" style={{ maxWidth: '440px', marginTop: '32px' }}>
-        <div style={{ background: '#ffffff', border: '1px solid var(--outline-variant)', borderRadius: 'var(--radius-lg)', padding: '32px 24px', boxShadow: '0px 12px 32px rgba(0,0,0,0.04)' }}>
+      <div className="w-full" style={{ maxWidth: '440px', marginTop: '24px' }}>
+        <div style={{ background: '#ffffff', border: '3px solid #0E0E10', borderRadius: '24px', padding: '32px 24px', boxShadow: '6px 6px 0px #0E0E10' }}>
           <form className="flex flex-col gap-6" onSubmit={handleSubmit}>
             <div className="grid grid-2 gap-4">
               <Input

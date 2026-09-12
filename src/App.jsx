@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence } from 'motion/react';
 
 // Layouts
 import PublicLayout from './layouts/PublicLayout';
@@ -79,8 +80,11 @@ import AdminUsers from './pages/admin/AdminUsers';
 import AdminSettings from './pages/admin/AdminSettings';
 
 export default function App() {
+  const location = useLocation();
+  
   return (
-    <Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
       {/* Public Routes */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
@@ -178,6 +182,7 @@ export default function App() {
           <Route path="health" element={<AdminSettings />} />
         </Route>
       </Route>
-    </Routes>
+      </Routes>
+    </AnimatePresence>
   );
 }

@@ -1,0 +1,118 @@
+/* ==========================================================================
+   TUCKII ABOUT PAGE CSS
+   Clean grotesque typography, squircle badges, and honest spacing
+   ========================================================================== */
+
+.nb-about-page {
+  background-color: var(--nb-bg);
+  color: var(--nb-black);
+  min-height: 100vh;
+  padding: 60px 0 100px;
+  font-family: var(--nb-font);
+}
+
+.nb-about-container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.nb-about-header {
+  margin-bottom: 32px;
+}
+
+.nb-about-title {
+  font-family: var(--nb-font);
+  font-weight: 900;
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+  color: var(--nb-black);
+  margin: 0 0 12px;
+}
+
+.nb-about-byline {
+  font-size: 16px;
+  font-weight: 700;
+  color: #444444;
+}
+
+.nb-about-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.nb-about-section-item {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.nb-section-badge-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.nb-about-section-title {
+  font-family: var(--nb-font);
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--nb-black);
+  margin: 0;
+}
+
+.nb-about-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  font-size: 17px;
+  line-height: 1.7;
+  color: #222222;
+  font-weight: 500;
+}
+
+.nb-about-principles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-left: 0;
+  list-style: none;
+  margin-top: 8px;
+}
+
+.nb-about-principles-list li {
+  background: #FFFFFF;
+  border: 2px solid var(--nb-black);
+  border-radius: 12px;
+  padding: 12px 18px;
+  box-shadow: 2.5px 2.5px 0px var(--nb-black);
+}
+
+.nb-about-cta-card {
+  background-color: var(--nb-yellow);
+  border: 3px solid var(--nb-black);
+  border-radius: 24px;
+  box-shadow: 6px 6px 0px var(--nb-black);
+  padding: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.nb-cta-inner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.nb-cta-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}

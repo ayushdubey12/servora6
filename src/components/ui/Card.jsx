@@ -1,14 +1,20 @@
+import { motion } from "motion/react";
 import './Card.css';
 
 export default function Card({ children, className = '', padding = true, hover = false, onClick, ...props }) {
   return (
-    <div
+    <motion.div
       className={`card ${padding ? 'card-padded' : ''} ${hover ? 'card-hover' : ''} ${onClick ? 'card-clickable' : ''} ${className}`}
       onClick={onClick}
+      whileHover={hover ? { y: -8, scale: 1.02, boxShadow: "0 20px 40px rgba(0,0,0,0.2)" } : {}}
+      whileTap={onClick ? { scale: 0.98 } : {}}
+      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
       {...props}
     >
       {children}
-    </div>
+    </motion.div>
   );
 }
 

@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Icons } from '../../assets/icons';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
+import { ServoraLogo } from '../../components/public/ServoraIcons';
+import './Contact.css';
 
 export default function Contact() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     restaurant: '',
-    message: ''
+    tables: '',
+    message: '',
   });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -20,112 +20,163 @@ export default function Contact() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
-
     setTimeout(() => {
       setLoading(false);
       setSubmitted(true);
-      setFormData({ name: '', email: '', restaurant: '', message: '' });
-    }, 1000);
+      setFormData({ name: '', email: '', restaurant: '', tables: '', message: '' });
+    }, 800);
   };
 
   return (
-    <div className="contact-page py-24 min-h-screen" style={{ background: 'var(--background)' }}>
-      <div className="container max-w-5xl">
-        <div className="grid grid-2 gap-16">
+    <div className="nb-contact-page">
+      <div className="nb-container">
+        <div className="nb-contact-grid">
           {/* Left Column */}
           <div>
-            <h1 className="headline-lg mb-6" style={{ color: 'var(--on-surface)' }}>Get in touch</h1>
-            <p className="body-lg mb-10" style={{ color: 'var(--on-surface-variant)' }}>
-              Have questions about Servora? We're here to help. Fill out the form and our team will get back to you within 24 hours.
+            <span className="nb-pill-badge" style={{ backgroundColor: '#FFCA28' }}>
+              Hospitality Specialist Team
+            </span>
+            <h1 className="nb-h1 nb-bilingual-headline mt-3 mb-4">
+              <span className="nb-hindi">बात करें —</span>
+              <br />
+              <span style={{ fontFamily: 'var(--nb-font)' }}>your restaurant.</span>
+            </h1>
+            <p className="nb-contact-sub">
+              Thinking about ditching paper menus or clunky legacy POS? Book a personalized 15-minute walkthrough. We'll show you exactly how Servora handles your dining rush.
             </p>
 
-            <div className="flex flex-col gap-8 mb-12">
-              <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary flex-shrink-0" style={{ background: 'var(--primary-fixed)', border: '1px solid var(--primary-fixed-dim)' }}>
-                  <Icons.Mail size={24} />
+            <div className="nb-contact-info-list">
+              <div className="nb-contact-card">
+                <div className="nb-contact-icon" style={{ backgroundColor: '#FF6584', color: '#FFF' }}>
+                  ✉️
                 </div>
                 <div>
-                  <h3 className="headline-md mb-1" style={{ color: 'var(--on-surface)' }}>Email us</h3>
-                  <p className="body-md mb-2" style={{ color: 'var(--on-surface-variant)' }}>Our friendly team is here to help.</p>
-                  <a href="mailto:hello.servora@gmail.com" className="body-md font-medium" style={{ color: 'var(--primary)' }}>hello.servora@gmail.com</a>
+                  <h3 className="nb-contact-card-title">Hospitality Team Email</h3>
+                  <p className="nb-contact-card-desc">We reply in under 2 hours on weekdays</p>
+                  <a href="mailto:hello@servora.app" className="nb-contact-link">
+                    hello@servora.app
+                  </a>
                 </div>
               </div>
 
-              <div className="flex gap-4 items-start">
-                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-primary flex-shrink-0" style={{ background: 'var(--primary-fixed)', border: '1px solid var(--primary-fixed-dim)' }}>
-                  <Icons.MapPin size={24} />
+              <div className="nb-contact-card">
+                <div className="nb-contact-icon" style={{ backgroundColor: '#22C55E', color: '#FFF' }}>
+                  📱
                 </div>
                 <div>
-                  <h3 className="headline-md mb-1" style={{ color: 'var(--on-surface)' }}>Visit us</h3>
-                  <p className="body-md mb-2" style={{ color: 'var(--on-surface-variant)' }}>Come say hello at our office HQ.</p>
-                  <p className="body-md font-medium" style={{ color: 'var(--on-surface)' }}>Jaipur, Rajasthan, India</p>
+                  <h3 className="nb-contact-card-title">Direct Onboarding WhatsApp</h3>
+                  <p className="nb-contact-card-desc">Quick setup questions & menu digitization help</p>
+                  <span className="nb-contact-link">+91 98765 43210</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Right Column - Form */}
-          <div className="glass p-8" style={{ borderRadius: 'var(--radius-2xl)' }}>
-            {submitted ? (
-              <div className="text-center py-12">
-                <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6" style={{ background: 'rgba(74, 222, 128, 0.1)', color: 'var(--success)', border: '1px solid rgba(74, 222, 128, 0.2)' }}>
-                  <Icons.Check size={32} />
+          {/* Right Column: Form Card */}
+          <div className="nb-contact-form-container">
+            <div className="nb-contact-form-card">
+              <div className="flex items-center gap-3 mb-6">
+                <ServoraLogo size={40} />
+                <div>
+                  <h3 className="font-black text-xl">Book a Demo or Ask a Question</h3>
+                  <p className="text-xs font-bold text-gray-500">Free menu transcription included</p>
                 </div>
-                <h3 className="headline-md mb-4" style={{ color: 'var(--on-surface)' }}>Message Sent!</h3>
-                <p className="body-md mb-8" style={{ color: 'var(--on-surface-variant)' }}>Thanks for reaching out. A member of our team will get back to you shortly.</p>
-                <Button onClick={() => setSubmitted(false)} variant="outline">Send another message</Button>
               </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-                <Input
-                  label="Full Name"
-                  id="name"
-                  required
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="Jane Doe"
-                />
 
-                <Input
-                  label="Email Address"
-                  id="email"
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="jane@restaurant.com"
-                />
-
-                <Input
-                  label="Restaurant Name"
-                  id="restaurant"
-                  value={formData.restaurant}
-                  onChange={handleChange}
-                  placeholder="Hotel Siraj"
-                />
-
-                <div className="input-group">
-                  <label htmlFor="message" className="input-label">How can we help?</label>
-                  <textarea
-                    id="message"
-                    required
-                    rows={4}
-                    className="input-field input-textarea"
-                    value={formData.message}
-                    onChange={handleChange}
-                    placeholder="Tell us about your restaurant..."
-                  ></textarea>
+              {submitted ? (
+                <div className="nb-contact-success">
+                  <span className="text-4xl">🎉</span>
+                  <h3 className="font-black text-2xl mt-3 mb-2">We Received Your Request!</h3>
+                  <p className="text-gray-600 font-semibold mb-6">
+                    Our onboarding team will reach out via email or WhatsApp within a few hours to schedule your personalized live walkthrough.
+                  </p>
+                  <button
+                    className="nb-btn nb-btn-black"
+                    onClick={() => setSubmitted(false)}
+                  >
+                    Submit Another Inquiry
+                  </button>
                 </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="nb-form">
+                  <div className="nb-form-group">
+                    <label htmlFor="name" className="nb-label">Your Name</label>
+                    <input
+                      type="text"
+                      id="name"
+                      required
+                      placeholder="e.g. Chef Sanjay Kapoor"
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="nb-input"
+                    />
+                  </div>
 
-                <Button type="submit" size="lg" loading={loading} className="mt-2">
-                  Send Message
-                </Button>
+                  <div className="nb-form-group">
+                    <label htmlFor="email" className="nb-label">Work Email / Phone</label>
+                    <input
+                      type="text"
+                      id="email"
+                      required
+                      placeholder="e.g. sanjay@smokehouse.com"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="nb-input"
+                    />
+                  </div>
 
-                <p className="label-sm text-center mt-4" style={{ color: 'var(--on-surface-variant)' }}>
-                  By submitting this form, you agree to our Privacy Policy.
-                </p>
-              </form>
-            )}
+                  <div className="nb-form-group">
+                    <label htmlFor="restaurant" className="nb-label">Restaurant / Cafe Name</label>
+                    <input
+                      type="text"
+                      id="restaurant"
+                      required
+                      placeholder="e.g. Smokehouse Cafe & Grill"
+                      value={formData.restaurant}
+                      onChange={handleChange}
+                      className="nb-input"
+                    />
+                  </div>
+
+                  <div className="nb-form-group">
+                    <label htmlFor="tables" className="nb-label">Approximate Number of Tables</label>
+                    <select
+                      id="tables"
+                      value={formData.tables}
+                      onChange={handleChange}
+                      className="nb-input"
+                      required
+                    >
+                      <option value="">Select table count...</option>
+                      <option value="1-10">1 – 10 tables (Small Cafe / QSR)</option>
+                      <option value="11-25">11 – 25 tables (Full Service Bistro)</option>
+                      <option value="26-50">26 – 50 tables (High-volume Restaurant)</option>
+                      <option value="50+">50+ tables / Multi-location Group</option>
+                    </select>
+                  </div>
+
+                  <div className="nb-form-group">
+                    <label htmlFor="message" className="nb-label">Specific Needs or Questions</label>
+                    <textarea
+                      id="message"
+                      rows="3"
+                      placeholder="Tell us what POS or setup you currently use..."
+                      value={formData.message}
+                      onChange={handleChange}
+                      className="nb-input nb-textarea"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="nb-btn nb-btn-black w-full"
+                  >
+                    {loading ? 'Submitting...' : 'Book My Demo →'}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import './Toggle.css';
 
 export default function Toggle({ checked, onChange, label, disabled, className = '' }) {
@@ -11,7 +12,11 @@ export default function Toggle({ checked, onChange, label, disabled, className =
           onChange={(e) => !disabled && onChange && onChange(e.target.checked)}
           disabled={disabled}
         />
-        <div className="toggle-thumb"></div>
+        <motion.div 
+          className="toggle-thumb"
+          animate={{ x: checked ? 20 : 0 }}
+          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+        />
       </div>
       {label && <span className="toggle-label">{label}</span>}
     </label>

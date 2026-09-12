@@ -1,0 +1,312 @@
+/* ==========================================================================
+   PHONE MOCKUP CSS
+   Exact Neo-Brutalism iPhone Frame with Folder Tabs & Hard Shadows
+   ========================================================================== */
+
+.nb-phone-chassis {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  background-color: #FFFFFF;
+  border: 3px solid #0E0E10;
+  border-radius: 40px;
+  box-shadow: 12px 14px 0px #0E0E10;
+  overflow: hidden;
+  padding: 16px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  user-select: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nb-phone-chassis:hover {
+  transform: translateY(-4px);
+  box-shadow: 16px 18px 0px #0E0E10;
+}
+
+/* Status Bar */
+.nb-phone-top-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px 14px;
+  font-family: var(--nb-font);
+  font-weight: 800;
+  font-size: 13px;
+  color: #0E0E10;
+}
+
+.nb-status-notch {
+  width: 76px;
+  height: 18px;
+  background-color: #0E0E10;
+  border-radius: 12px;
+  margin: 0 auto;
+}
+
+.nb-status-indicators {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nb-battery-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #0E0E10;
+  color: #FFFFFF;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* Screen Header */
+.nb-phone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.nb-phone-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nb-phone-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: #FFFFFF;
+  border: 2.5px solid #0E0E10;
+  border-radius: 12px;
+  box-shadow: 2.5px 2.5px 0px #0E0E10;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.nb-phone-icon-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3.5px 3.5px 0px #0E0E10;
+}
+
+.nb-phone-icon-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px #0E0E10;
+}
+
+/* Headline */
+.nb-phone-headline {
+  margin-bottom: 18px;
+}
+
+.nb-phone-headline h2 {
+  font-family: var(--nb-font);
+  font-weight: 900;
+  font-size: 27px;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  color: #0E0E10;
+  margin: 0;
+}
+
+/* Save Input Bar */
+.nb-phone-save-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.nb-phone-input-box {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background-color: #FFFFFF;
+  border: 2.5px solid #0E0E10;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0px #0E0E10;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.nb-phone-input-box:hover {
+  background-color: #FAF8F5;
+}
+
+.nb-phone-hash {
+  font-weight: 900;
+  font-size: 15px;
+  color: #0E0E10;
+  margin-right: 8px;
+}
+
+.nb-phone-placeholder {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #555555;
+  flex: 1;
+}
+
+.nb-phone-copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #0E0E10;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.nb-phone-add-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: #FFCA28;
+  border: 2.5px solid #0E0E10;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0px #0E0E10;
+  font-size: 26px;
+  font-weight: 900;
+  color: #0E0E10;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  line-height: 1;
+}
+
+.nb-phone-add-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px #0E0E10;
+  background-color: #FFD54F;
+}
+
+.nb-phone-add-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #0E0E10;
+}
+
+/* Section Title */
+.nb-phone-section-title {
+  font-family: var(--nb-font);
+  font-weight: 800;
+  font-size: 16px;
+  color: #0E0E10;
+  margin-bottom: 12px;
+}
+
+/* Folder Grid */
+.nb-phone-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 10px;
+}
+
+/* Individual Folder Card */
+.nb-phone-folder-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.nb-phone-folder-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Top folder tab */
+.nb-phone-tab {
+  align-self: flex-start;
+  width: 58px;
+  height: 10px;
+  border: 2.5px solid #0E0E10;
+  border-bottom: none;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  position: relative;
+  z-index: 2;
+  margin-bottom: -2.5px;
+  margin-left: 2px;
+}
+
+/* Folder Card Inner */
+.nb-phone-folder-inner {
+  border: 2.5px solid #0E0E10;
+  border-radius: 0px 14px 14px 14px;
+  background-color: #FFFFFF;
+  box-shadow: 3px 3px 0px #0E0E10;
+  padding: 10px 10px 12px;
+  position: relative;
+  z-index: 1;
+  min-height: 94px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.nb-phone-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.nb-folder-icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #0E0E10;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+
+.nb-folder-counts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.nb-count-links {
+  font-size: 11px;
+  font-weight: 700;
+  color: #333333;
+}
+
+.nb-count-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: #777777;
+}
+
+.nb-badge-pill-new {
+  display: inline-block;
+  background-color: #FF6584;
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  border: 1.5px solid #0E0E10;
+  letter-spacing: 0.04em;
+}
+
+.nb-folder-card-title {
+  font-family: var(--nb-font);
+  font-weight: 800;
+  font-size: 12.5px;
+  line-height: 1.25;
+  color: #0E0E10;
+  margin-top: 6px;
+}

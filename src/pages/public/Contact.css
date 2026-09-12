@@ -1,0 +1,135 @@
+/* ==========================================================================
+   TUCKII CONTACT PAGE CSS
+   ========================================================================== */
+
+.nb-contact-page {
+  background-color: var(--nb-bg);
+  min-height: 100vh;
+  padding: 60px 0 100px;
+  font-family: var(--nb-font);
+  color: var(--nb-black);
+}
+
+.nb-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+  align-items: flex-start;
+}
+
+.nb-contact-sub {
+  font-size: 17px;
+  line-height: 1.65;
+  color: #444444;
+  font-weight: 500;
+  margin-bottom: 36px;
+}
+
+.nb-contact-info-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.nb-contact-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: #FFFFFF;
+  border: 2.5px solid var(--nb-black);
+  border-radius: 18px;
+  padding: 18px 20px;
+  box-shadow: 4px 4px 0px var(--nb-black);
+}
+
+.nb-contact-icon {
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--nb-black);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.nb-contact-card-title {
+  font-weight: 900;
+  font-size: 16px;
+  margin: 0 0 2px;
+}
+
+.nb-contact-card-desc {
+  font-size: 13px;
+  color: #666;
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+
+.nb-contact-link {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--nb-black);
+  text-decoration: underline;
+}
+
+/* Contact Form Card */
+.nb-contact-form-card {
+  background: #FFFFFF;
+  border: 3px solid var(--nb-black);
+  border-radius: 28px;
+  box-shadow: 6px 6px 0px var(--nb-black);
+  padding: 36px;
+}
+
+.nb-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.nb-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nb-label {
+  font-weight: 800;
+  font-size: 13.5px;
+  color: var(--nb-black);
+}
+
+.nb-input {
+  border: 2.5px solid var(--nb-black);
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-family: var(--nb-font);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--nb-black);
+  outline: none;
+  transition: box-shadow 0.15s ease;
+  background-color: #FAF8F5;
+}
+
+.nb-input:focus {
+  background-color: #FFFFFF;
+  box-shadow: 3px 3px 0px var(--nb-black);
+}
+
+.nb-textarea {
+  resize: vertical;
+}
+
+.nb-contact-success {
+  text-align: center;
+  padding: 24px 0;
+}
+
+@media (max-width: 840px) {
+  .nb-contact-grid {
+    grid-template-columns: 1fr;
+  }
+}
