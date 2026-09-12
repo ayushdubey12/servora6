@@ -1,0 +1,80 @@
+/* Plush Clay Kitchen Layout */
+
+.kitchen-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+.kitchen-header {
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--outline-variant);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-6);
+  box-shadow:
+    inset 0 -1px 2px rgba(0, 0, 0, 0.03),
+    inset 0 1px 2px rgba(255, 255, 255, 0.4);
+}
+
+.kitchen-header-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.kitchen-title {
+  font-family: var(--font-sans);
+  font-size: var(--body-lg-fontSize);
+  font-weight: var(--font-extrabold);
+  color: var(--on-surface);
+}
+
+.kitchen-header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.kitchen-time {
+  font-family: var(--font-sans);
+  font-size: var(--label-md-fontSize);
+  font-weight: var(--font-semibold);
+  color: var(--on-surface-variant);
+}
+
+.kitchen-logout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-full);
+  color: var(--on-surface-variant);
+  background: var(--surface-container-low);
+  border: 1px solid var(--outline-variant);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-family: var(--font-sans);
+  font-size: var(--body-md-fontSize);
+  font-weight: var(--font-semibold);
+}
+
+.kitchen-logout:hover {
+  background: var(--error-container);
+  color: var(--error);
+  border-color: var(--error);
+}
+
+.kitchen-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-6);
+}
+
+@media (max-width: 768px) {
+  .kitchen-header { padding: 0 var(--space-4); }
+  .kitchen-main { padding: var(--space-4); }
+}

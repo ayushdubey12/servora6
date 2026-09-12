@@ -1,0 +1,423 @@
+.account-page {
+  padding-bottom: 80px;
+}
+
+.account-loading {
+  padding: 120px 24px;
+  text-align: center;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+  font-size: var(--label-md-fontSize);
+}
+
+.account-gate {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 100px 24px;
+  text-align: center;
+}
+
+.account-gate-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  color: var(--primary);
+}
+
+.account-gate h2 {
+  font-size: 22px;
+  font-weight: 500;
+  color: var(--on-surface);
+  margin: 8px 0 0;
+}
+
+.account-gate p {
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  max-width: 340px;
+  margin: 0 0 8px;
+}
+
+.account-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+}
+
+.account-identity {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.account-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.account-name {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--on-surface);
+  margin: 0;
+}
+
+.account-email {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  margin: 2px 0 0;
+}
+
+.account-loyalty-card {
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.account-loyalty-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.account-tier {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-tier-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-container);
+  color: var(--on-primary-container);
+}
+
+.account-tier-label {
+  font-size: var(--label-sm-fontSize);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--on-surface-variant);
+  margin: 0;
+}
+
+.account-tier-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--on-surface);
+  margin: 2px 0 0;
+}
+
+.account-points-big {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.account-points-number {
+  font-size: 40px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
+
+.account-points-unit {
+  font-size: 14px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+}
+
+.account-tier-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-tier-progress-track {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-container-low);
+  overflow: hidden;
+}
+
+.account-tier-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--primary-container), var(--primary));
+  transition: width 0.4s ease;
+}
+
+.account-tier-progress-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  margin: 0;
+}
+
+.account-tier-progress-label svg {
+  color: var(--primary);
+}
+
+.account-tier-progress-label strong {
+  color: var(--on-surface);
+}
+
+.account-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.account-stat {
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  text-align: center;
+}
+
+.account-stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+  margin: 0;
+}
+
+.account-stat-label {
+  font-size: var(--label-sm-fontSize);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--on-surface-variant);
+  margin: 4px 0 0;
+}
+
+.account-section {
+  margin-top: 28px;
+}
+
+.account-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.account-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--on-surface);
+  margin: 0;
+}
+
+.account-section-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  transition: background 0.2s ease;
+}
+
+.account-section-action:hover {
+  background: var(--surface-container-low);
+}
+
+.account-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 24px;
+  border-radius: var(--radius-lg);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  color: var(--on-surface-variant);
+  font-size: 14px;
+}
+
+.account-empty svg {
+  color: var(--on-surface-variant);
+  flex-shrink: 0;
+}
+
+.account-reservation-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-reservation-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg);
+}
+
+.account-reservation-date {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 48px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  background: var(--surface-container-low);
+}
+
+.account-reservation-day {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+  line-height: 1.1;
+}
+
+.account-reservation-month {
+  font-size: var(--label-sm-fontSize);
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--on-surface-variant);
+}
+
+.account-reservation-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.account-reservation-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--on-surface);
+  margin: 0;
+}
+
+.account-reservation-note {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  margin: 2px 0 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.account-order-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.account-order-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.account-order-row:hover {
+  background: var(--surface-container-low);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.account-order-id {
+  min-width: 0;
+}
+
+.account-order-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--on-surface);
+  margin: 0;
+}
+
+.account-order-meta {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  margin: 2px 0 0;
+}
+
+.account-order-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.account-order-points {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--label-sm-fontSize);
+  font-family: var(--font-mono);
+  color: var(--primary);
+}
+
+.account-order-total {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+  min-width: 64px;
+  text-align: right;
+}
+
+.account-footnote {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+  margin: 14px 4px 0;
+}
+
+.account-footnote strong {
+  color: var(--primary);
+}
+
+@media (max-width: 640px) {
+  .account-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

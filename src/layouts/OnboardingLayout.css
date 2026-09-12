@@ -1,0 +1,56 @@
+.onboarding-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, rgba(173, 198, 255, 0.08), transparent 25%), var(--background);
+}
+
+.onboarding-header {
+  padding: var(--space-6) var(--space-8);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02);
+  backdrop-filter: blur(20px);
+}
+
+.onboarding-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.onboarding-brand-name {
+  font-family: var(--font-sans);
+  font-size: var(--headline-md-fontSize);
+  font-weight: var(--font-semibold);
+  color: var(--on-surface);
+}
+
+.onboarding-progress-bar {
+  padding: var(--space-4) var(--space-8);
+}
+
+.onboarding-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+}
+
+.onboarding-container {
+  width: 100%;
+  max-width: 720px;
+  animation: fadeInUp 0.5s ease both;
+}
+
+.onboarding-container {
+  width: 100%;
+  max-width: 640px;
+  animation: fadeInUp 0.5s ease both;
+}
+
+@media (max-width: 768px) {
+  .onboarding-header { padding: var(--space-4); }
+  .onboarding-progress-bar { padding: var(--space-3) var(--space-4); }
+  .onboarding-main { padding: var(--space-4); align-items: flex-start; }
+}

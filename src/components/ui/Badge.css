@@ -1,0 +1,51 @@
+/* Minimal Classic Badges — flat, clean chips */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+.badge-default {
+  background: var(--surface-container);
+  color: var(--on-surface-variant);
+}
+.badge-primary {
+  background: var(--primary-fixed);
+  color: var(--primary);
+}
+.badge-secondary {
+  background: var(--secondary-fixed);
+  color: var(--secondary);
+}
+.badge-tertiary {
+  background: var(--tertiary-fixed);
+  color: var(--tertiary);
+}
+.badge-success {
+  background: var(--tertiary-fixed);
+  color: var(--tertiary);
+}
+.badge-warning {
+  background: var(--warning-container);
+  color: var(--warning);
+}
+.badge-error {
+  background: var(--error-container);
+  color: var(--error);
+}
+.badge-sm { font-size: 11px; padding: 2px 8px; }
+.badge-md { font-size: 12px; padding: 3px 12px; }
+.badge-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+  flex-shrink: 0;
+}

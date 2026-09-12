@@ -1,0 +1,40 @@
+/* Minimal Classic Table */
+
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--outline-variant);
+  background: #ffffff;
+}
+.table { width: 100%; border-collapse: collapse; text-align: left; }
+.table th {
+  padding: 12px 20px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--surface-container-low);
+  border-bottom: 1px solid var(--outline-variant);
+}
+.table td {
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--on-surface);
+  border-bottom: 1px solid var(--outline-variant);
+  vertical-align: middle;
+}
+.table tbody tr:last-child td { border-bottom: none; }
+.table-row-clickable { cursor: pointer; transition: all var(--transition-fast); }
+.table-row-clickable:hover { background: var(--surface-container-low); }
+.table-empty {
+  text-align: center;
+  padding: 48px 20px !important;
+  color: var(--on-surface-variant) !important;
+  font-size: 14px;
+}
+.table-row-clickable.table-row-danger:hover { background: var(--error-container); }
+.table-row-clickable.table-row-success:hover { background: var(--success-container); }

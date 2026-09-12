@@ -1,0 +1,31 @@
+/* Admin Settings / Health */
+
+.record-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.record-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--outline-variant);
+}
+
+.record-item:last-child { border-bottom: none; }
+
+.record-name {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--on-surface);
+  text-transform: capitalize;
+}
+
+.record-count {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+}

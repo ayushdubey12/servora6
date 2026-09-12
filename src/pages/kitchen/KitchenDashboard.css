@@ -1,0 +1,266 @@
+/* ═══════════════════════════════════════════
+   Kitchen Dashboard — Mobile-first card grid
+   ═══════════════════════════════════════════ */
+
+.kds-dash {
+  padding-bottom: 40px;
+}
+
+.kds-dash-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+/* ── Header ─────────────────────────────── */
+.kds-dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 0 12px;
+}
+
+.kds-dash-header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.kds-dash-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--on-surface);
+}
+
+.kds-dash-time {
+  font-size: 12px;
+  color: var(--on-surface-variant);
+  font-family: var(--font-mono);
+}
+
+/* ── Stats ──────────────────────────────── */
+.kds-dash-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.kds-dash-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg);
+  border-left: 3px solid;
+}
+
+.kds-dash-stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.kds-dash-stat-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.kds-dash-stat-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--on-surface);
+  line-height: 1;
+}
+
+.kds-dash-stat-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--on-surface-variant);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ── Alert ──────────────────────────────── */
+.kds-dash-alert {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--primary-container), var(--primary-fixed));
+  border: 1px solid var(--primary);
+}
+
+.kds-dash-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--on-primary-container);
+}
+
+/* ── Order Grid ─────────────────────────── */
+.kds-dash-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .kds-dash-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .kds-dash-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ── Mini Order Card ────────────────────── */
+.kds-mini-card {
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.15s ease;
+}
+
+.kds-mini-card:active {
+  transform: scale(0.98);
+}
+
+.kds-mini-card--ready {
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 1px var(--secondary), 0 2px 8px rgba(164, 48, 115, 0.1);
+}
+
+.kds-mini-bar {
+  height: 3px;
+  width: 100%;
+}
+
+.kds-mini-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px 6px;
+}
+
+.kds-mini-id {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
+
+.kds-mini-table {
+  padding: 0 12px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+}
+
+.kds-mini-items {
+  padding: 0 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+
+.kds-mini-item {
+  font-size: 11px;
+  color: var(--on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.kds-mini-more {
+  font-size: 10px;
+  color: var(--on-surface-variant);
+  opacity: 0.6;
+}
+
+.kds-mini-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-top: 1px solid var(--outline-variant);
+  background: var(--surface-container-lowest);
+}
+
+.kds-mini-total {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary);
+  font-family: var(--font-mono);
+}
+
+.kds-mini-customer {
+  font-size: 10px;
+  color: var(--on-surface-variant);
+}
+
+/* ── Empty State ────────────────────────── */
+.kds-dash-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.kds-dash-empty svg {
+  color: var(--success);
+  opacity: 0.5;
+}
+
+.kds-dash-empty h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--on-surface);
+}
+
+.kds-dash-empty p {
+  font-size: 13px;
+  color: var(--on-surface-variant);
+}
+
+/* ── Mobile Adjustments ─────────────────── */
+@media (max-width: 480px) {
+  .kds-dash-stats {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .kds-dash-stat {
+    padding: 10px 12px;
+  }
+
+  .kds-dash-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .kds-dash-title {
+    font-size: 20px;
+  }
+}

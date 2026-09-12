@@ -1,0 +1,82 @@
+.res-action {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--outline-variant);
+  background: #ffffff;
+  color: var(--on-surface-variant);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.res-action:hover {
+  transform: translateY(-1px);
+}
+
+.res-action-confirm {
+  color: var(--success);
+}
+
+.res-action-confirm:hover {
+  background: color-mix(in srgb, var(--success) 15%, transparent);
+  border-color: var(--success);
+}
+
+.res-action-no-show {
+  color: var(--warning);
+}
+
+.res-action-no-show:hover {
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  border-color: var(--warning);
+}
+
+.res-action-cancel {
+  color: var(--error);
+}
+
+.res-action-cancel:hover {
+  background: color-mix(in srgb, var(--error) 15%, transparent);
+  border-color: var(--error);
+}
+
+.res-date-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  border: 1px solid var(--outline-variant);
+  color: var(--on-surface-variant);
+}
+
+.res-date-filter input[type="date"] {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--on-surface);
+  font-family: var(--font-mono);
+  font-size: var(--label-md-fontSize);
+  color-scheme: light;
+}
+
+.res-date-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: var(--surface-container-low);
+  color: var(--on-surface-variant);
+  cursor: pointer;
+}
+
+.res-date-clear:hover {
+  color: var(--on-surface);
+}
