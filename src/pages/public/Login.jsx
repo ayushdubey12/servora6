@@ -27,7 +27,7 @@ const PORTALS = {
   owner: {
     title: 'Welcome back',
     subtitle: "Don't have an account? Start your 14-day free trial",
-    allowedRoles: null,
+    allowedRoles: ['owner'],
     demo: 'owner@hotelsiraj.in / password123',
     placeholder: 'owner@hotelsiraj.in',
     icon: <Icons.Store size={20} />,

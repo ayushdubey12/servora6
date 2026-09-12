@@ -45,6 +45,15 @@ async function api(path, options = {}) {
     headers: { ...allHeaders(), ...options.headers },
   });
 
+  if (res.status === 401) {
+    const stored = JSON.parse(localStorage.getItem('servora-auth') || 'null');
+    if (stored?.token) {
+      localStorage.removeItem('servora-auth');
+      window.location.href = '/login';
+    }
+    throw new Error('Session expired');
+  }
+
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error(body.error || body.message || `API error ${res.status}`);
@@ -98,6 +107,13 @@ export async function getStaff() {
 
 export async function deleteStaff(id) {
   return api(`/api/auth/staff/${id}`, { method: 'DELETE' });
+}
+
+export async function updateStaffPassword(id, password) {
+  return api(`/api/auth/staff/${id}/password`, {
+    method: 'PUT',
+    body: JSON.stringify({ password }),
+  });
 }
 
 export async function getDashboardStats() {
@@ -422,6 +438,12 @@ async function adminApi(path, options = {}) {
       ...options.headers,
     },
   });
+
+  if (res.status === 401) {
+    localStorage.removeItem('servora-admin');
+    window.location.href = '/admin/login';
+    throw new Error('Session expired');
+  }
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));

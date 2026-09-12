@@ -7,7 +7,7 @@ import Modal from '../../components/ui/Modal';
 import Input from '../../components/ui/Input';
 import { Icons } from '../../assets/icons';
 import { useAuth } from '../../context/AuthContext';
-import { registerStaff, getStaff, deleteStaff } from '../../lib/api';
+import { registerStaff, getStaff, deleteStaff, updateStaffPassword } from '../../lib/api';
 
 export default function Staff() {
   const { user } = useAuth();
@@ -19,6 +19,10 @@ export default function Staff() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [resetModal, setResetModal] = useState({ open: false, staff: null });
+  const [newPassword, setNewPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState('');
 
   const loadStaff = useCallback(async () => {
     setLoading(true);
@@ -86,6 +90,21 @@ export default function Staff() {
     }
   };
 
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 8) { setResetError('Password must be at least 8 characters'); return; }
+    setResetLoading(true);
+    setResetError('');
+    try {
+      await updateStaffPassword(resetModal.staff.id, newPassword);
+      setResetModal({ open: false, staff: null });
+      setNewPassword('');
+    } catch (err) {
+      setResetError(err.message || 'Failed to reset password');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
   const roleIcon = (role) => {
     const map = { waiter: Icons.Users, chef: Icons.ChefHat };
     const Comp = map[role] || Icons.Users;
@@ -108,6 +127,7 @@ export default function Staff() {
     { header: 'Joined', field: 'createdAt', align: 'left', render: (row) => <span className="text-sm text-muted">{row.createdAt ? new Date(row.createdAt).toLocaleDateString() : '—'}</span> },
     { header: 'Actions', field: 'id', align: 'center', render: (row) => (
       <div className="flex items-center justify-center gap-2">
+        <button onClick={(e) => { e.stopPropagation(); setResetModal({ open: true, staff: row }); setNewPassword(''); setResetError(''); }} className="p-1.5 rounded-md glass-hover text-primary" title="Reset Password"><Icons.Key size={16} /></button>
         <button onClick={(e) => { e.stopPropagation(); handleDelete(row.id); }} className="p-1.5 rounded-md glass-hover text-error" title="Remove"><Icons.Trash size={16} /></button>
       </div>
     )},
@@ -171,6 +191,19 @@ export default function Staff() {
           </div>
           <Input label="Email" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="email@example.com" required />
           <Input label="Password" type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} placeholder="Min 8 chars (default: password123)" />
+        </div>
+      </Modal>
+
+      <Modal isOpen={resetModal.open} onClose={() => setResetModal({ open: false, staff: null })} title={`Reset Password — ${resetModal.staff?.name || ''}`} maxWidth="450px" footer={
+        <div className="flex items-center justify-end gap-3">
+          <Button variant="secondary" onClick={() => setResetModal({ open: false, staff: null })}>Cancel</Button>
+          <Button variant="primary" onClick={handleResetPassword} loading={resetLoading}>Update Password</Button>
+        </div>
+      }>
+        <div className="flex flex-col gap-4">
+          {resetError && <div className="text-sm text-error">{resetError}</div>}
+          <p className="text-sm text-muted">Set a new password for <strong>{resetModal.staff?.email}</strong>.</p>
+          <Input label="New Password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Min 8 characters" required />
         </div>
       </Modal>
     </div>

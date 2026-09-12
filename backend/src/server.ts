@@ -394,21 +394,8 @@ async function seedAdminUser() {
 
 // ── One-time rotation of publicly-leaked default credentials ────
 async function rotateSeededCredentials() {
-  const seededEmails = ['owner@hotelsiraj.in', 'chef@hotelsiraj.in', 'waiter@hotelsiraj.in', 'waiter2@hotelsiraj.in'];
-  for (const email of seededEmails) {
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) continue;
-    const stillDefault = await bcrypt.compare('password123', user.password).catch(() => false);
-    if (!stillDefault) continue;
-    const newPw = crypto.randomBytes(18).toString('base64url');
-    await prisma.user.update({ where: { id: user.id }, data: { password: await bcrypt.hash(newPw, 10) } });
-    if (email === 'owner@hotelsiraj.in') {
-      console.log(`\n[SECURITY] Default password rotated for ${email}`);
-      console.log(`[SECURITY] New owner password (shown once, save it now): ${newPw}\n`);
-    } else {
-      console.log(`[SECURITY] Rotated default password for ${email}. Have the owner re-invite this staff member.`);
-    }
-  }
+  // Demo accounts (owner/chef/waiter) are intentionally kept at password123
+  // for demo purposes. Only rotate the customer account.
   const demoCustomer = await prisma.customer.findUnique({ where: { email: 'arjun@customer.com' } });
   if (demoCustomer) {
     const stillDefault = await bcrypt.compare('password123', demoCustomer.password).catch(() => false);
@@ -470,6 +457,28 @@ app.post('/api/auth/register', limit(authLimiter), asyncHandler(async (req, res)
   const user = await prisma.user.create({
     data: { name: parsed.data.name, email: parsed.data.email, password: pw, role: 'owner', restaurantId: restaurant.id },
   });
+
+  // Auto-create default staff accounts for kitchen and staff portals
+  const defaultStaffPassword = await bcrypt.hash('password123', 10);
+  const chefEmail = `chef@${slug}.com`;
+  const waiterEmail = `waiter@${slug}.com`;
+  const [chefExists, waiterExists] = await Promise.all([
+    prisma.user.findUnique({ where: { email: chefEmail } }),
+    prisma.user.findUnique({ where: { email: waiterEmail } }),
+  ]);
+  const staffCreates = [];
+  if (!chefExists) {
+    staffCreates.push(prisma.user.create({
+      data: { name: `${parsed.data.restaurantName} Chef`, email: chefEmail, password: defaultStaffPassword, role: 'chef', restaurantId: restaurant.id },
+    }));
+  }
+  if (!waiterExists) {
+    staffCreates.push(prisma.user.create({
+      data: { name: `${parsed.data.restaurantName} Waiter`, email: waiterEmail, password: defaultStaffPassword, role: 'waiter', restaurantId: restaurant.id },
+    }));
+  }
+  if (staffCreates.length > 0) await Promise.all(staffCreates);
+
   const token = signStaffToken(user);
   return res.status(201).json({
     success: true,
@@ -679,6 +688,21 @@ app.delete('/api/auth/staff/:id', requireAuth('staff'), requireRole('owner'), as
   if (user.role === 'owner') return res.status(400).json({ success: false, message: 'Cannot remove the owner' });
   await prisma.order.updateMany({ where: { claimedById: id }, data: { claimedById: null } });
   await prisma.user.delete({ where: { id } });
+  return res.json({ success: true, data: { id } });
+}));
+
+app.put('/api/auth/staff/:id/password', requireAuth('staff'), requireRole('owner'), asyncHandler(async (req, res) => {
+  const schema = z.object({ password: z.string().min(8).max(128) });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ success: false, message: 'Password must be 8-128 characters' });
+  const rid = requireStaffRestaurant(req, res);
+  if (!rid) return;
+  const id = paramStr(req.params.id);
+  const user = await prisma.user.findFirst({ where: { id, restaurantId: rid } });
+  if (!user) return res.status(404).json({ success: false, message: 'Staff member not found' });
+  if (user.role === 'owner') return res.status(400).json({ success: false, message: 'Cannot change owner password here' });
+  const pw = await bcrypt.hash(parsed.data.password, 10);
+  await prisma.user.update({ where: { id }, data: { password: pw } });
   return res.json({ success: true, data: { id } });
 }));
 
