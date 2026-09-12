@@ -9,7 +9,7 @@ const PORTALS = {
   kitchen: {
     title: 'Kitchen Portal',
     subtitle: 'Sign in to the Kitchen Display System',
-    allowedRoles: ['chef', 'owner'],
+    allowedRoles: ['chef'],
     demo: 'chef@hotelsiraj.in / password123',
     placeholder: 'chef@hotelsiraj.in',
     icon: <Icons.Clock size={20} />,
@@ -18,7 +18,7 @@ const PORTALS = {
   staff: {
     title: 'Staff Portal',
     subtitle: 'Sign in to the Staff Dashboard',
-    allowedRoles: ['waiter', 'owner'],
+    allowedRoles: ['waiter'],
     demo: 'waiter@hotelsiraj.in / password123',
     placeholder: 'waiter@hotelsiraj.in',
     icon: <Icons.Activity size={20} />,
