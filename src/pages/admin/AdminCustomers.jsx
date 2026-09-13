@@ -36,7 +36,7 @@ export default function AdminCustomers() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'servora-customers.csv';
+      a.download = 'ai-restaurant-customers.csv';
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {

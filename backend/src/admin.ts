@@ -275,7 +275,7 @@ adminRouter.get('/customers/export', asyncHandler(async (req, res) => {
   ).join('\n');
 
   res.setHeader('Content-Type', 'text/csv');
-  res.setHeader('Content-Disposition', 'attachment; filename="servora-customers.csv"');
+  res.setHeader('Content-Disposition', 'attachment; filename="ai-restaurant-customers.csv"');
   return res.send(header + rows);
 }));
 

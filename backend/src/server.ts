@@ -380,10 +380,10 @@ async function seedAdminUser() {
     return;
   }
 
-  const defaultPassword = 'Servora@2026';
+  const defaultPassword = 'AIRestaurant@2026';
   await prisma.user.create({
     data: {
-      name: 'Servora Admin',
+      name: 'AI Restaurant Admin',
       email: adminEmail,
       password: await bcrypt.hash(defaultPassword, 10),
       role: 'admin',
@@ -1643,7 +1643,7 @@ app.get('/api/payments/upi-intent/:orderId', limit(writeLimiter), asyncHandler(a
       data: {
         vpa: upi.vpa, payeeName: upi.payeeName,
         amount: order.expectedUpiAmount, shortCode: order.orderShortCode,
-        deepLink: `upi://pay?pa=${encodeURIComponent(upi.vpa)}&pn=${encodeURIComponent(upi.payeeName)}&am=${order.expectedUpiAmount.toFixed(2)}&cu=INR&tn=Servora%20${order.orderShortCode}`,
+        deepLink: `upi://pay?pa=${encodeURIComponent(upi.vpa)}&pn=${encodeURIComponent(upi.payeeName)}&am=${order.expectedUpiAmount.toFixed(2)}&cu=INR&tn=AI%20Restaurant%20${order.orderShortCode}`,
       },
     });
   }
@@ -1692,7 +1692,7 @@ app.get('/api/payments/upi-intent/:orderId', limit(writeLimiter), asyncHandler(a
     data: {
       vpa: upi.vpa, payeeName: upi.payeeName,
       amount: expected, shortCode,
-      deepLink: `upi://pay?pa=${encodeURIComponent(upi.vpa)}&pn=${encodeURIComponent(upi.payeeName)}&am=${expected.toFixed(2)}&cu=INR&tn=Servora%20${shortCode}`,
+      deepLink: `upi://pay?pa=${encodeURIComponent(upi.vpa)}&pn=${encodeURIComponent(upi.payeeName)}&am=${expected.toFixed(2)}&cu=INR&tn=AI%20Restaurant%20${shortCode}`,
     },
   });
 }));

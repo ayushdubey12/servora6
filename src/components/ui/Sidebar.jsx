@@ -12,7 +12,7 @@ export default function Sidebar({ items, footerItems, defaultCollapsed = false, 
         {!isCollapsed && (
           <div className="sidebar-logo">
             <Icons.Logo size={24} />
-            <span className="sidebar-brand">Servora</span>
+            <span className="sidebar-brand">AI Restaurant</span>
           </div>
         )}
         {isCollapsed && (

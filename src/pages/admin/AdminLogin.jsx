@@ -39,7 +39,7 @@ export default function AdminLogin() {
           <Icons.Logo size={48} />
         </div>
         <h1 className="admin-login-title">Platform Admin</h1>
-        <p className="admin-login-subtitle">Sign in to the Servora admin panel</p>
+        <p className="admin-login-subtitle">Sign in to the AI Restaurant admin panel</p>
 
         {error && (
           <div className="admin-login-error">

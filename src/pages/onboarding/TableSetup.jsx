@@ -8,7 +8,7 @@ import Button from '../../components/ui/Button';
 import Card, { CardBody } from '../../components/ui/Card';
 import './TableSetup.css';
 
-const STORAGE_KEY = 'servora-onboarding-draft';
+const STORAGE_KEY = 'ai-restaurant-onboarding-draft';
 
 function readDraft() {
   try {

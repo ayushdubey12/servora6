@@ -86,7 +86,7 @@ export default function Pricing() {
               <span className="nb-pill-badge" style={{ backgroundColor: '#FF6584', color: '#FFF' }}>
                 Full Service & Multi-Station
               </span>
-              <h3 className="nb-pricing-plan-name">Servora Pro</h3>
+              <h3 className="nb-pricing-plan-name">AI Restaurant Pro</h3>
               <p className="nb-pricing-plan-desc">
                 For busy dining floors requiring multi-station routing, staff roles, and deep analytics.
               </p>
