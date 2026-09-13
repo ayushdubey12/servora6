@@ -27,7 +27,7 @@ export default function AdminDashboard() {
     <div className="admin-page">
       <div className="admin-page-header">
         <h1 className="headline-lg">Platform Overview</h1>
-        <p className="body-md text-muted">AI Restaurant platform statistics and recent activity</p>
+        <p className="body-md text-muted">Avi platform statistics and recent activity</p>
       </div>
 
       <div className="admin-stats-grid">

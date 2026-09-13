@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function hydrate() {
       try {
-        const stored = JSON.parse(localStorage.getItem('ai-restaurant-auth') || 'null');
+        const stored = JSON.parse(localStorage.getItem('avi-auth') || 'null');
         if (stored?.user && stored?.token) {
           // Verify token is still valid by fetching profile
           try {
@@ -32,14 +32,14 @@ export function AuthProvider({ children }) {
               setToken(stored.token);
               setIsAuthenticated(true);
               // Update localStorage with fresh data so other contexts get the right restaurantId
-              localStorage.setItem('ai-restaurant-auth', JSON.stringify({
+              localStorage.setItem('avi-auth', JSON.stringify({
                 user: { ...stored.user, restaurantId: freshUser.restaurantId },
                 token: stored.token,
               }));
             }
           } catch {
             // Token invalid, clear
-            localStorage.removeItem('ai-restaurant-auth');
+            localStorage.removeItem('avi-auth');
           }
         }
       } catch {
@@ -62,7 +62,7 @@ export function AuthProvider({ children }) {
     setToken(data.token);
     setIsAuthenticated(true);
 
-    localStorage.setItem('ai-restaurant-auth', JSON.stringify({
+    localStorage.setItem('avi-auth', JSON.stringify({
       user: data.user,
       token: data.token,
     }));
@@ -71,7 +71,7 @@ export function AuthProvider({ children }) {
   };
 
   const logout = () => {
-    localStorage.removeItem('ai-restaurant-auth');
+    localStorage.removeItem('avi-auth');
     setUser(null);
     setIsAuthenticated(false);
     setToken(null);
@@ -91,7 +91,7 @@ export function AuthProvider({ children }) {
     setToken(result.token);
     setIsAuthenticated(true);
 
-    localStorage.setItem('ai-restaurant-auth', JSON.stringify({
+    localStorage.setItem('avi-auth', JSON.stringify({
       user: result.user,
       token: result.token,
     }));

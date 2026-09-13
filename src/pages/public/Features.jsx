@@ -125,7 +125,7 @@ export default function Features() {
         {/* Bottom CTA */}
         <div className="nb-cta-banner mt-16" style={{ padding: '40px 24px' }}>
           <h2 className="nb-cta-title" style={{ fontSize: '2rem' }}>Ready to run a faster dining room?</h2>
-          <p className="nb-cta-desc" style={{ marginBottom: 20 }}>Try AI Restaurant free for 14 days. No credit card required.</p>
+          <p className="nb-cta-desc" style={{ marginBottom: 20 }}>Try Avi free for 14 days. No credit card required.</p>
           <div className="nb-cta-buttons">
             <Link to="/register" className="nb-btn nb-btn-black">
               Start Free Trial

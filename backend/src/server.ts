@@ -380,10 +380,10 @@ async function seedAdminUser() {
     return;
   }
 
-  const defaultPassword = 'AIRestaurant@2026';
+  const defaultPassword = 'Avi@2026';
   await prisma.user.create({
     data: {
-      name: 'AI Restaurant Admin',
+      name: 'Avi Admin',
       email: adminEmail,
       password: await bcrypt.hash(defaultPassword, 10),
       role: 'admin',

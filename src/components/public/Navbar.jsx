@@ -31,7 +31,7 @@ export default function Navbar() {
         <Link to="/" className="nb-navbar-brand">
           <ServoraLogo size={36} />
           <span className="nb-brand-text" style={{ fontFamily: 'var(--nb-font-display)', letterSpacing: '-0.02em' }}>
-AI Restaurant
+Avi
           </span>
         </Link>
 

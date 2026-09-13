@@ -13,7 +13,7 @@ export function CustomerAuthProvider({ children }) {
     let cancelled = false;
     async function hydrate() {
       try {
-        const stored = JSON.parse(localStorage.getItem('ai-restaurant-customer') || 'null');
+        const stored = JSON.parse(localStorage.getItem('avi-customer') || 'null');
         if (stored?.customer && stored?.token) {
           if (!cancelled) {
             setCustomer(stored.customer);
@@ -30,7 +30,7 @@ export function CustomerAuthProvider({ children }) {
   }, []);
 
   const persist = (data) => {
-    localStorage.setItem('ai-restaurant-customer', JSON.stringify(data));
+    localStorage.setItem('avi-customer', JSON.stringify(data));
     setCustomer(data.customer);
     setToken(data.token);
   };
@@ -69,7 +69,7 @@ export function CustomerAuthProvider({ children }) {
   };
 
   const logout = async () => {
-    localStorage.removeItem('ai-restaurant-customer');
+    localStorage.removeItem('avi-customer');
     setCustomer(null);
     setToken(null);
   };
@@ -77,7 +77,7 @@ export function CustomerAuthProvider({ children }) {
   const refresh = useCallback(async () => {
     if (!token) return;
     try {
-      const stored = JSON.parse(localStorage.getItem('ai-restaurant-customer') || 'null');
+      const stored = JSON.parse(localStorage.getItem('avi-customer') || 'null');
       if (!stored?.customer?.id) return;
 
       const profile = await getCustomerProfile();
@@ -89,7 +89,7 @@ export function CustomerAuthProvider({ children }) {
         points: profile.points,
       };
       setCustomer(fullCustomer);
-      localStorage.setItem('ai-restaurant-customer', JSON.stringify({ customer: fullCustomer, token }));
+      localStorage.setItem('avi-customer', JSON.stringify({ customer: fullCustomer, token }));
       return fullCustomer;
     } catch {
       return null;

@@ -32,7 +32,7 @@ export default function OnboardingLayout() {
       <header className="onboarding-header">
         <div className="onboarding-brand">
           <Icons.Logo size={24} />
-          <span className="onboarding-brand-name">AI Restaurant</span>
+          <span className="onboarding-brand-name">Avi</span>
         </div>
       </header>
       

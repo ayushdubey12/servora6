@@ -116,7 +116,7 @@ export default function Payment() {
         key: razorpayOrderData.keyId,
         amount: razorpayOrderData.amount,
         currency: razorpayOrderData.currency,
-        name: restaurant?.name || 'AI Restaurant',
+        name: restaurant?.name || 'Avi',
         description: `Payment for Order #${String(order.id).slice(0, 8)}`,
         order_id: razorpayOrderData.razorpayOrderId,
         // Handler function — called on successful payment

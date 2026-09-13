@@ -77,7 +77,7 @@ export default function Home() {
     },
     {
       q: 'Does it work with standard tablets and phones?',
-      a: 'Yes. AI Restaurant runs on iPads, Android tablets, and phones you already own with zero proprietary hardware required.',
+      a: 'Yes. Avi runs on iPads, Android tablets, and phones you already own with zero proprietary hardware required.',
     },
     {
       q: 'Can customers split bills and pay via UPI?',
@@ -248,7 +248,7 @@ export default function Home() {
                     </div>
                     <div className="nb-share-app-chip nb-share-tuckii-highlight">
                       <ServoraLogo size={28} />
-                      <span className="font-bold">AI Restaurant</span>
+                      <span className="font-bold">Avi</span>
                     </div>
                   </div>
 
