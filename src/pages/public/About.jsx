@@ -9,7 +9,7 @@ export default function About() {
       <div className="nb-about-container">
         {/* Header */}
         <div className="nb-about-header">
-          <h1 className="nb-about-title nb-bilingual-headline">About Avi</h1>
+          <h1 className="nb-about-title nb-bilingual-headline">About Echovera</h1>
           <small className="nb-hindi-sublabel" style={{ textAlign: 'left' }}>हमारे बारे में— रेस्तरां के लिए, रेस्तरां द्वारा।</small>
           <p className="nb-about-byline">By the Founders · Built for operators & chefs</p>
         </div>
@@ -17,7 +17,7 @@ export default function About() {
         {/* Lead Callout Card */}
         <div className="nb-callout-card mb-12">
           <p className="nb-callout-text">
-            We built Avi after watching restaurant teams battle jammed ticket printers, clunky legacy terminals, and split-bill chaos during Saturday night rushes. This is why it exists.
+            We built Echovera after watching restaurant teams battle jammed ticket printers, clunky legacy terminals, and split-bill chaos during Saturday night rushes. This is why it exists.
           </p>
         </div>
 
@@ -27,7 +27,7 @@ export default function About() {
           <div className="nb-about-section-item">
             <div className="nb-section-badge-header">
               <span className="nb-badge-num">1</span>
-              <h2 className="nb-about-section-title">Why we built Avi</h2>
+              <h2 className="nb-about-section-title">Why we built Echovera</h2>
             </div>
             <div className="nb-about-section-body">
               <p>
@@ -43,11 +43,11 @@ export default function About() {
           <div className="nb-about-section-item">
             <div className="nb-section-badge-header">
               <span className="nb-badge-num">2</span>
-              <h2 className="nb-about-section-title">What Avi is</h2>
+              <h2 className="nb-about-section-title">What Echovera is</h2>
             </div>
             <div className="nb-about-section-body">
               <p>
-                Avi is a <strong>unified restaurant operating platform</strong>. Guests scan table QR codes to browse and order in seconds. Orders route instantly to digital kitchen displays, and bills settle directly from phones.
+                Echovera is a <strong>unified restaurant operating platform</strong>. Guests scan table QR codes to browse and order in seconds. Orders route instantly to digital kitchen displays, and bills settle directly from phones.
               </p>
               <p>
                 Your front of house, kitchen line, and checkout stay completely in sync with zero hardware lock-in.
@@ -82,7 +82,7 @@ export default function About() {
           <div className="nb-cta-inner">
             <ServoraLogo size={48} />
             <div>
-              <h3 className="nb-h3 mb-1">Try Avi on your floor</h3>
+              <h3 className="nb-h3 mb-1">Try Echovera on your floor</h3>
               <p className="font-semibold text-gray-700 text-sm">
                 14-day free trial. Setup takes under 24 hours.
               </p>

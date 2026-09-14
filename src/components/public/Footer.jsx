@@ -12,7 +12,7 @@ export default function Footer() {
           <div className="nb-footer-brand-col">
             <div className="nb-footer-brand-header">
               <ServoraLogo size={36} />
-              <span className="nb-brand-text">Avi</span>
+              <span className="nb-brand-text">Echovera</span>
             </div>
             <p className="nb-footer-tagline">
               The modern restaurant operating system. QR menus, table ordering, kitchen display, staff workflows, and live analytics — in one unified platform.
@@ -39,7 +39,7 @@ export default function Footer() {
           <div className="nb-footer-col">
             <h4 className="nb-footer-heading">Company</h4>
             <div className="nb-footer-links">
-              <Link to="/about">About Avi</Link>
+              <Link to="/about">About Echovera</Link>
               <a href="/about#story">Founder Story</a>
               <a href="/#faq">Restaurant FAQ</a>
               <Link to="/contact">Book a Demo</Link>
@@ -61,7 +61,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="nb-footer-bottom">
           <p className="nb-footer-copy">
-            © {new Date().getFullYear()} Avi Inc. Crafted with passion for restaurant operators and hospitality teams.
+            © {new Date().getFullYear()} Echovera Inc. Crafted with passion for restaurant operators and hospitality teams.
           </p>
           <div className="nb-footer-legal">
             <a href="#privacy">Privacy Policy</a>

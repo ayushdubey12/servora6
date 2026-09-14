@@ -17,7 +17,7 @@ export default function StaffLayout() {
         <div className="staff-header-inner">
           <div className="staff-brand">
             <Icons.Logo size={24} />
-            <span className="staff-brand-name">Avi Staff</span>
+            <span className="staff-brand-name">Echovera Staff</span>
           </div>
           <div className="staff-profile">
             <Avatar initials={user?.name} size="sm" />

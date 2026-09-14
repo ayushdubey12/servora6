@@ -144,7 +144,7 @@ export function generateReceipt(order, restaurant) {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(6);
   doc.setTextColor(170);
-  const powered = 'Powered by Avi';
+  const powered = 'Powered by Echovera';
   const poweredWidth = doc.getTextWidth(powered);
   doc.text(powered, (w - poweredWidth) / 2, y);
 

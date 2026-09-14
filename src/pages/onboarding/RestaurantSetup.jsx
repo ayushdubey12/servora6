@@ -8,7 +8,7 @@ import Button from '../../components/ui/Button';
 import Card, { CardBody } from '../../components/ui/Card';
 import './RestaurantSetup.css';
 
-const STORAGE_KEY = 'avi-onboarding-draft';
+const STORAGE_KEY = 'echovera-onboarding-draft';
 
 function readDraft() {
   try {
@@ -73,7 +73,7 @@ export default function RestaurantSetup() {
           <Icons.Store size={24} />
         </div>
         <h1 className="headline-md">Restaurant details</h1>
-        <p className="body-md text-muted">Tell us who you are so Avi can build your operating setup.</p>
+        <p className="body-md text-muted">Tell us who you are so Echovera can build your operating setup.</p>
       </div>
 
       <Card className="onboarding-card animate-fade-in-up delay-1">

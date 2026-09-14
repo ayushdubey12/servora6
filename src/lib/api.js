@@ -6,7 +6,7 @@
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function authHeaders() {
-  const stored = localStorage.getItem('avi-auth');
+  const stored = localStorage.getItem('echovera-auth');
   if (!stored) return {};
   try {
     const { token } = JSON.parse(stored);
@@ -17,7 +17,7 @@ function authHeaders() {
 }
 
 function customerAuthHeaders() {
-  const stored = localStorage.getItem('avi-customer');
+  const stored = localStorage.getItem('echovera-customer');
   if (!stored) return {};
   try {
     const { token } = JSON.parse(stored);
@@ -46,9 +46,9 @@ async function api(path, options = {}) {
   });
 
   if (res.status === 401) {
-    const stored = JSON.parse(localStorage.getItem('avi-auth') || 'null');
+    const stored = JSON.parse(localStorage.getItem('echovera-auth') || 'null');
     if (stored?.token) {
-      localStorage.removeItem('avi-auth');
+      localStorage.removeItem('echovera-auth');
       window.location.href = '/login';
     }
     throw new Error('Session expired');

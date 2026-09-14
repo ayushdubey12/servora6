@@ -47,7 +47,7 @@ export default function Complete() {
       </div>
       <h1 className="headline-lg">Setup complete</h1>
       <p className="body-lg text-muted" style={{ textAlign: 'center', maxWidth: 400, margin: '0 auto' }}>
-        Your restaurant is now ready to operate with Avi.
+        Your restaurant is now ready to operate with Echovera.
       </p>
 
       {summary && (

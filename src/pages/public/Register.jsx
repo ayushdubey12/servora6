@@ -47,7 +47,7 @@ export default function Register() {
       <div className="w-full" style={{ maxWidth: '440px' }}>
         <div className="flex justify-center mb-6">
           <Link to="/" className="flex items-center gap-3">
-            <span style={{ fontSize: '28px', fontWeight: 900, color: 'var(--nb-black, #0E0E10)', letterSpacing: '-0.03em' }}>Avi</span>
+            <span style={{ fontSize: '28px', fontWeight: 900, color: 'var(--nb-black, #0E0E10)', letterSpacing: '-0.03em' }}>Echovera</span>
           </Link>
         </div>
         <h2 className="text-center" style={{ fontFamily: 'var(--nb-font)', fontSize: '28px', fontWeight: 900, color: 'var(--nb-black, #0E0E10)', lineHeight: '36px', marginBottom: '8px' }}>

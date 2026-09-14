@@ -8,7 +8,7 @@ import Button from '../../components/ui/Button';
 import Card, { CardBody } from '../../components/ui/Card';
 import './MenuSetup.css';
 
-const STORAGE_KEY = 'avi-onboarding-draft';
+const STORAGE_KEY = 'echovera-onboarding-draft';
 
 function readDraft() {
   try {

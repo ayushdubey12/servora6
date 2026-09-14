@@ -42,7 +42,7 @@ export default function Contact() {
               <span style={{ fontFamily: 'var(--nb-font)' }}>your restaurant.</span>
             </h1>
             <p className="nb-contact-sub">
-              Thinking about ditching paper menus or clunky legacy POS? Book a personalized 15-minute walkthrough. We'll show you exactly how Avi handles your dining rush.
+              Thinking about ditching paper menus or clunky legacy POS? Book a personalized 15-minute walkthrough. We'll show you exactly how Echovera handles your dining rush.
             </p>
 
             <div className="nb-contact-info-list">

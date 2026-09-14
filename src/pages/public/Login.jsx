@@ -145,7 +145,7 @@ export default function Login() {
       {/* Brand Header */}
       <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 24, textDecoration: 'none' }}>
         <ServoraLogo size={42} />
-        <span style={{ fontSize: 28, fontWeight: 900, color: '#0E0E10', letterSpacing: '-0.03em' }}>Avi</span>
+        <span style={{ fontSize: 28, fontWeight: 900, color: '#0E0E10', letterSpacing: '-0.03em' }}>Echovera</span>
       </Link>
 
       {/* Main Neo-Brutalist Login Box */}
